@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import com.androzic.Androzic;
+import com.androzic.BaseApplication;
 import com.androzic.map.Tile;
 
 import android.graphics.Bitmap;
@@ -61,7 +61,7 @@ public class TileFactory
 
 	public static byte[] loadTile(TileProvider provider, int tx, int ty, byte z)
 	{
-		Androzic application = Androzic.getApplication();
+		BaseApplication application = BaseApplication.getApplication();
 		if (application == null)
 			return null;
 		
@@ -94,7 +94,7 @@ public class TileFactory
 
 	public static void saveTile(TileProvider provider, byte[] dat, int tx, int ty, byte z)
 	{
-		Androzic application = Androzic.getApplication();
+		BaseApplication application = BaseApplication.getApplication();
 		if (application == null)
 			return;
 		

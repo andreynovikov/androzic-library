@@ -18,26 +18,24 @@
  * along with Androzic.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.androzic.data;
+package com.androzic;
 
-import android.graphics.Bitmap;
+import android.app.Application;
 
-public class MapObject
+public abstract class BaseApplication extends Application
 {
-	public long _id = 0;
-	public double latitude = 0;
-	public double longitude = 0;
-	public int altitude = Integer.MIN_VALUE;
-	public int proximity = 0;
-	public Bitmap bitmap;
-
-	public MapObject()
+	private static BaseApplication self;
+	
+	@SuppressWarnings("unchecked")
+	public static <T extends BaseApplication> T getApplication()
 	{
+		return (T) self;
+	}
+	
+	protected static <T extends BaseApplication> void setInstance(T instance)
+	{
+		self = instance;
 	}
 
-	public MapObject(double lat, double lon)
-	{
-		latitude = lat;
-		longitude = lon;
-	}
+	public abstract String getRootPath();
 }
