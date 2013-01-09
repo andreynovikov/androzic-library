@@ -19,7 +19,7 @@ import android.widget.ImageView;
 import android.widget.PopupWindow.OnDismissListener;
 import android.widget.TextView;
 
-import com.androzic.R;
+import com.androzic.library.R;
 
 /**
  * QuickAction dialog.

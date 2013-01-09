@@ -29,7 +29,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.androzic.R;
+import com.androzic.library.R;
 import com.androzic.ui.QuickView;
 
 public class HelpfulEditTextPreference extends EditTextPreference

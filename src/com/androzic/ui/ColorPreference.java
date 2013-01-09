@@ -40,7 +40,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.androzic.R;
+import com.androzic.library.R;
 
 public class ColorPreference extends DialogPreference
 {

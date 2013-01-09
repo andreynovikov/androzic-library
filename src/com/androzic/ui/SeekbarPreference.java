@@ -19,7 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.androzic.R;
+import com.androzic.library.R;
 
 /**
  * SeekbarPreference class implements seekbar {@link android.preference.DialogPreference} edit.
