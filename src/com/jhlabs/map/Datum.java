@@ -52,7 +52,7 @@ public class Datum {
 	    new Datum("Bahamas NAD27", Ellipsoid.CLARKE_1880, -4, 154, 178),
 	    new Datum("Bellevue IGN", Ellipsoid.INTERNATIONAL_1924, -127, -769, 472),
 	    new Datum("Bermuda 1957", Ellipsoid.CLARKE_1880, -73, 213, 296),
-	    new Datum("Borowa Góra", Ellipsoid.BESSEL_NOR, 655, 22, 444),
+	    new Datum("Borowa GÃ³ra", Ellipsoid.BESSEL_NOR, 655, 22, 444),
 
 	    new Datum("Bukit Rimpah", Ellipsoid.BESSEL, -384, 664, -48),
 	    

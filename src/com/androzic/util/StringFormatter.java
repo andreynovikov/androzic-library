@@ -103,7 +103,7 @@ public class StringFormatter
 				final double coord = Math.abs(coordinate);
 				final int degrees = (int) Math.floor(coord);
 				final double minutes = (coord - degrees) * 60;
-				return coordIntFormat.format(sign*degrees) + "° "
+				return coordIntFormat.format(sign*degrees) + "Â° "
 						+ coordMinFormat.format(minutes) + "'";
 			}
 			case 2:
@@ -114,7 +114,7 @@ public class StringFormatter
 				final double min = (coord - degrees) * 60;
 				final int minutes = (int) Math.floor(min);
 				final double seconds = (min - minutes) * 60;
-				return coordIntFormat.format(sign*degrees) + "° "
+				return coordIntFormat.format(sign*degrees) + "Â° "
 						+ coordIntFormat.format(minutes) + "' "
 						+ coordSecFormat.format(seconds) + "\"";
 			}
@@ -151,7 +151,7 @@ public class StringFormatter
 
 	public static String bearingH(double bearing)
 	{
-		return String.format("%.0f", bearing)+"°";
+		return String.format("%.0f", bearing)+"Â°";
 	}
 
 	public static final String bearingSimpleH(double bearing)
