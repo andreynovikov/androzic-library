@@ -22,6 +22,7 @@ package com.androzic.ui;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Arrays;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -140,7 +141,10 @@ public class FolderPickerPreference extends DialogPreference implements OnItemCl
 	{
 		File initial = new File(mCurrentValue);
 		if (! initial.exists() || ! initial.isDirectory())
+		{
 			initial = Environment.getExternalStorageDirectory();
+			mCurrentValue = initial.getAbsolutePath();
+		}
 
 		mValueText.setText(initial.getAbsolutePath());
 
@@ -155,7 +159,7 @@ public class FolderPickerPreference extends DialogPreference implements OnItemCl
 		{
 			folders[i + parent] = dirs[i].getName();
 		}
-
+		Arrays.sort(folders);
 		ArrayAdapter<String> folderAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, android.R.id.text1, folders);
 		mFolderList.setAdapter(folderAdapter);
 	}
