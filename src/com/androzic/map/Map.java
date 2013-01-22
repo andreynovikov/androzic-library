@@ -39,6 +39,7 @@ import android.view.View;
 
 import com.jhlabs.Point2D;
 import com.jhlabs.map.proj.Projection;
+import com.jhlabs.map.proj.ProjectionException;
 
 public class Map implements Serializable
 {
@@ -258,7 +259,15 @@ public class Map implements Serializable
 	public boolean coversLatLon(double lat, double lon)
 	{
 		int[] xy = new int[2];
-		boolean inside = getXYByLatLon(lat, lon, xy);
+		boolean inside = false;
+		try
+		{
+			inside = getXYByLatLon(lat, lon, xy);
+		}
+		catch (ProjectionException e)
+		{
+			return false;
+		}
 		
 		// check corners
 		if (inside)
