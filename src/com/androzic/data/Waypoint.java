@@ -26,8 +26,6 @@ public class Waypoint extends MapObject
 {
 	public boolean silent = false;
 	public WaypointSet set = null;
-	public int textcolor = Integer.MIN_VALUE;
-	public int backcolor = Integer.MIN_VALUE;
 	public Date date;
 
 	public Waypoint()
