@@ -24,11 +24,7 @@ import java.util.Date;
 
 public class Waypoint extends MapObject
 {
-	public String name = "";
-	public String description = "";
 	public boolean silent = false;
-	public String image = "";
-	public boolean drawImage = false;
 	public WaypointSet set = null;
 	public int textcolor = Integer.MIN_VALUE;
 	public int backcolor = Integer.MIN_VALUE;
@@ -44,10 +40,10 @@ public class Waypoint extends MapObject
 		super(latitude, longitude);
 	}
 
-	public Waypoint(String aName, String aDescription, double lat, double lon)
+	public Waypoint(String name, String description, double lat, double lon)
 	{
 		super(lat, lon);
-		name = aName;
-		description = aDescription;
+		this.name = name;
+		this.description = description;
 	}
 }
