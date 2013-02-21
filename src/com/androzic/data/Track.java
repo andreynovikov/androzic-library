@@ -1,21 +1,21 @@
 /*
  * Androzic - android navigation client that uses OziExplorer maps (ozf2, ozfx3).
- * Copyright (C) 2010-2012  Andrey Novikov <http://andreynovikov.info/>
- *
+ * Copyright (C) 2010-2013 Andrey Novikov <http://andreynovikov.info/>
+ * 
  * This file is part of Androzic application.
- *
+ * 
  * Androzic is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
-
+ * 
  * Androzic is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
-
+ * 
  * You should have received a copy of the GNU General Public License
- * along with Androzic.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Androzic. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.androzic.data;
@@ -32,7 +32,7 @@ public class Track
 	public boolean show;
 	public int color = -1;
 	public int width;
-	
+
 	public long maxPoints = 0;
 	public double distance;
 	public String filepath;
@@ -72,7 +72,7 @@ public class Track
 			time = t;
 		}
 	};
-	
+
 	public Track()
 	{
 		this("", "", false);
@@ -101,7 +101,7 @@ public class Track
 	{
 		if (lastTrackPoint != null)
 		{
-			distance += Geo.distance(lastTrackPoint.latitude, lastTrackPoint.longitude, lat, lon);			
+			distance += Geo.distance(lastTrackPoint.latitude, lastTrackPoint.longitude, lat, lon);
 		}
 		lastTrackPoint = new TrackPoint(continous, lat, lon, elev, speed, time);
 		synchronized (trackpoints)
@@ -138,16 +138,22 @@ public class Track
 
 	public void cutAfter(int location)
 	{
-		List<TrackPoint> tps = new ArrayList<TrackPoint>(trackpoints.subList(0, location+1));
-		trackpoints.clear();
-		trackpoints.addAll(tps);
+		synchronized (trackpoints)
+		{
+			List<TrackPoint> tps = new ArrayList<TrackPoint>(trackpoints.subList(0, location + 1));
+			trackpoints.clear();
+			trackpoints.addAll(tps);
+		}
 	}
 
 	public void cutBefore(int location)
 	{
-		List<TrackPoint> tps = new ArrayList<TrackPoint>(trackpoints.subList(location, trackpoints.size()));
-		trackpoints.clear();
-		trackpoints.addAll(tps);
+		synchronized (trackpoints)
+		{
+			List<TrackPoint> tps = new ArrayList<TrackPoint>(trackpoints.subList(location, trackpoints.size()));
+			trackpoints.clear();
+			trackpoints.addAll(tps);
+		}
 	}
 
 }
