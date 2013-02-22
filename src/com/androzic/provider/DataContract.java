@@ -8,7 +8,7 @@ public final class DataContract
 	protected static final String MAPOBJECTS_PATH = "mapobjects";
 	public static final Uri MAPOBJECTS_URI = Uri.parse("content://" + AUTHORITY + "/" + MAPOBJECTS_PATH);
 	
-	public static final String[] MAPOBJECT_COLUMNS = new String[] {"latitude", "longitude", "bitmap", "name", "description", "image"};
+	public static final String[] MAPOBJECT_COLUMNS = new String[] {"latitude", "longitude", "bitmap", "name", "description", "image", "textcolor", "backcolor"};
 	/**
 	 * Latitude (double, required)
 	 */
@@ -33,5 +33,13 @@ public final class DataContract
 	 * Image name, from icons pack (String, optional)
 	 */
 	public static final int MAPOBJECT_IMAGE_COLUMN = 5;
+	/**
+	 * Text color (int, optional)
+	 */
+	public static final int MAPOBJECT_TEXTCOLOR_COLUMN = 6;
+	/**
+	 * Marker/background color (int, optional)
+	 */
+	public static final int MAPOBJECT_BACKCOLOR_COLUMN = 7;
 	public static final String MAPOBJECT_ID_SELECTION = "IDLIST";
 }
