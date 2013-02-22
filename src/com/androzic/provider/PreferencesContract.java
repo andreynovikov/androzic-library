@@ -44,6 +44,10 @@ public final class PreferencesContract
 	 * String
 	 */
 	public static final int ELEVATION_ABBREVIATION = 8;
+	/**
+	 * int
+	 */
+	public static final int COORDINATES_FORMAT = 9;
 	
 	static
 	{
