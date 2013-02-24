@@ -5,8 +5,12 @@ import android.net.Uri;
 public final class DataContract
 {
 	public static final String AUTHORITY = "com.androzic.DataProvider";
+	public static final String ACTION_PICK_ICON = "com.androzic.PICK_ICON";
+	
 	protected static final String MAPOBJECTS_PATH = "mapobjects";
 	public static final Uri MAPOBJECTS_URI = Uri.parse("content://" + AUTHORITY + "/" + MAPOBJECTS_PATH);
+	protected static final String ICONS_PATH = "icons";
+	public static final Uri ICONS_URI = Uri.parse("content://" + AUTHORITY + "/" + ICONS_PATH);
 	
 	public static final String[] MAPOBJECT_COLUMNS = new String[] {"latitude", "longitude", "bitmap", "name", "description", "image", "textcolor", "backcolor"};
 	/**
@@ -42,4 +46,7 @@ public final class DataContract
 	 */
 	public static final int MAPOBJECT_BACKCOLOR_COLUMN = 7;
 	public static final String MAPOBJECT_ID_SELECTION = "IDLIST";
+	
+	public static final String[] ICON_COLUMNS = new String[] {"BITMAP"};
+	public static final int ICON_COLUMN = 0;
 }
