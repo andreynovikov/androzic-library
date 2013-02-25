@@ -4,6 +4,7 @@ import android.app.Service;
 
 public abstract class BaseLocationService extends Service
 {
+	public static final String ANDROZIC_LOCATION_SERVICE = "com.androzic.location";
 	/**
 	 * Broadcast sent when service status changes
 	 */
