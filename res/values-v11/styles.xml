@@ -1,7 +1,17 @@
-<resources>
-    <style name="BlackTheme" parent="@android:style/Theme.Holo"></style>
-    <style name="LightTheme" parent="@android:style/Theme.Holo.Light"></style>
-    <style name="BlackDialog" parent="@android:style/Theme.Holo.Dialog"></style>
-    <style name="LightDialog" parent="@android:style/Theme.Holo.Light.Dialog"></style>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <style name="BlackTheme" parent="@android:style/Theme.Holo">
+        <item name="android:actionOverflowButtonStyle">@style/OverFlow</item>
+    </style>
+
+    <style name="LightTheme" parent="@android:style/Theme.Holo.Light">
+        <item name="android:actionOverflowButtonStyle">@style/OverFlow</item>
+    </style>
+
     <style name="ButtonBar" parent="@android:style/Holo.ButtonBar"></style>
+
+    <style name="OverFlow" parent="@android:style/Widget.Holo.ActionButton.Overflow">
+        <item name="android:src">@drawable/ic_action_overflow</item>
+    </style>
 </resources>
