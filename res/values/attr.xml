@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <attr name="horizontalPadding" format="dimension" /> 
     <declare-styleable name="SeekbarPreference">
         <attr name="min" format="integer" />
         <attr name="max" format="integer" />

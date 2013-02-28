@@ -1,5 +1,7 @@
 <resources>
 
     <string name="app_name">Androzic Library</string>
+    <string name="done">Done</string>
+    <string name="cancel">Cancel</string>
 
 </resources>

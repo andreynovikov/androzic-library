@@ -2,14 +2,32 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <style name="BlackTheme" parent="@android:style/Theme.Holo">
+        <item name="horizontalPadding">6dip</item>
         <item name="android:actionOverflowButtonStyle">@style/OverFlow</item>
     </style>
 
     <style name="LightTheme" parent="@android:style/Theme.Holo.Light">
+        <item name="horizontalPadding">6dip</item>
         <item name="android:actionOverflowButtonStyle">@style/OverFlow</item>
     </style>
 
+    <style name="BlackDialog" parent="@android:style/Theme.Holo.Dialog">
+        <item name="horizontalPadding">6dip</item>
+    </style>
+
+    <style name="LightDialog" parent="@android:style/Theme.Holo.Light.Dialog">
+        <item name="horizontalPadding">6dip</item>
+    </style>
+
     <style name="ButtonBar" parent="@android:style/Holo.ButtonBar"></style>
+
+    <style name="Button" parent="@android:style/Widget.Holo.Button.Borderless"></style>
+
+    <style name="ButtonBarContainer">
+        <item name="android:paddingTop">6dip</item>
+        <item name="android:showDividers">beginning</item>
+        <item name="android:divider">?android:attr/dividerHorizontal</item>
+    </style>
 
     <style name="OverFlow" parent="@android:style/Widget.Holo.ActionButton.Overflow">
         <item name="android:src">@drawable/ic_action_overflow</item>
