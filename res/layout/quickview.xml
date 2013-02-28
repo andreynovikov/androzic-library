@@ -24,9 +24,9 @@
         android:fadingEdgeLength="0dip"
         android:layout_below="@id/header2"
         android:scrollbars="none"
-        android:padding="3dip"
+        android:padding="4dip"
         android:textColor="#ffffff"
-        android:background="#a0a0a0" />
+        android:background="#404040" />
 
     <FrameLayout
         android:id="@+id/footer"

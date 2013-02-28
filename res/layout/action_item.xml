@@ -33,6 +33,6 @@
 		android:layout_height="fill_parent" 
 		android:gravity="center_vertical|center_horizontal"
 		android:textSize="12sp"
-		android:textColor="#666"/>
+		android:textColor="?android:attr/textColorPrimary"/>
 		
 </LinearLayout>
