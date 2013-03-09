@@ -1,3 +1,23 @@
+/*
+ * Androzic - android navigation client that uses OziExplorer maps (ozf2, ozfx3).
+ * Copyright (C) 2010-2013 Andrey Novikov <http://andreynovikov.info/>
+ * 
+ * This file is part of Androzic application.
+ * 
+ * Androzic is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Androzic is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Androzic. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.androzic.navigation;
 
 import android.app.Service;
@@ -5,22 +25,18 @@ import android.app.Service;
 public abstract class BaseNavigationService extends Service
 {
 	/**
-	 * Navigation service action name.
-	 */
-	public static final String ANDROZIC_NAVIGATION_SERVICE = "com.androzic.navigation";
-	/**
-	 * Initiate navigation to map object registered by Androzic (by id),
+	 * Action to initiate navigation to map object registered by Androzic (by id),
 	 * which allows to navigate to moving object. In this mode navigation
 	 * is not restored if application is restarted.
 	 */
-    public static final String NAVIGATE_MAPOBJECT_WITH_ID = "com.androzic.navigateMapObjectWithId";
+	public static final String NAVIGATE_MAPOBJECT_WITH_ID = "com.androzic.navigateMapObjectWithId";
 	/**
-	 * Initiate navigation to map object. Navigation is restored if
+	 * Action to initiate navigation to map object. Navigation is restored if
 	 * application is restarted.
 	 */
-    public static final String NAVIGATE_MAPOBJECT = "com.androzic.navigateMapObject";
+	public static final String NAVIGATE_MAPOBJECT = "com.androzic.navigateMapObject";
 	/**
-	 * Initiate navigation via route. Navigation is restored if
+	 * Action to initiate navigation via route. Navigation is restored if
 	 * application is restarted.
 	 */
 	public static final String NAVIGATE_ROUTE = "com.androzic.navigateRoute";
@@ -57,15 +73,15 @@ public abstract class BaseNavigationService extends Service
 	 * Route start waypoint index. Zero based, optional. Type: int
 	 */
 	public static final String EXTRA_ROUTE_START = "start";
-	
+
 	public static final String BROADCAST_NAVIGATION_STATUS = "com.androzic.navigationStatusChanged";
 	public static final String BROADCAST_NAVIGATION_STATE = "com.androzic.navigationStateChanged";
-	
+
 	public static final int STATE_STARTED = 1;
 	public static final int STATE_NEXTWPT = 2;
 	public static final int STATE_REACHED = 3;
 	public static final int STATE_STOPED = 4;
-	
-	public static final int DIRECTION_FORWARD =  1;
+
+	public static final int DIRECTION_FORWARD = 1;
 	public static final int DIRECTION_REVERSE = -1;
 }
