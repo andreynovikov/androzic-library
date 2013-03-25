@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <style name="BlackTheme" parent="@android:style/Theme.Black">
         <item name="horizontalPadding">6dip</item>
@@ -31,9 +31,20 @@
     </style>
 
     <style name="ContentLayout">
-        <item name="android:padding">6dip</item>
+        <item name="android:paddingTop">6dip</item>
+        <item name="android:paddingBottom">6dip</item>
+        <item name="android:paddingLeft">12dip</item>
+        <item name="android:paddingRight">12dip</item>
     </style>
 
+    <style name="FieldLabel">
+        <item name="android:textStyle">bold</item>
+    </style>
+    
+    <style name="FieldLabelWithVerticalPadding" parent="@style/FieldLabel">
+        <item name="android:paddingTop">6dip</item>
+    </style>
+    
     <!-- Lorensius W. L. T <lorenz@londatiga.net> -->
     <style name="Animations" />
 
