@@ -51,6 +51,10 @@ public class Track
 		public double elevation;
 		public double speed;
 		public long time;
+		// Map position cache fields
+		public boolean dirty = true;
+		public int x = 0;
+		public int y = 0;
 
 		public TrackPoint()
 		{
