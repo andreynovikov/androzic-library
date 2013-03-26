@@ -31,7 +31,7 @@ public class Track
 	public String description;
 	public boolean show;
 	public int color = -1;
-	public int width;
+	public int width = 1;
 
 	public long maxPoints = 0;
 	public double distance;
@@ -147,6 +147,7 @@ public class Track
 			List<TrackPoint> tps = new ArrayList<TrackPoint>(trackpoints.subList(0, location + 1));
 			trackpoints.clear();
 			trackpoints.addAll(tps);
+			lastTrackPoint = trackpoints.get(trackpoints.size() - 1);
 		}
 	}
 
