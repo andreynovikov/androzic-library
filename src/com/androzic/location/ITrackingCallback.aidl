@@ -22,5 +22,5 @@ package com.androzic.location;
 
 oneway interface ITrackingCallback
 {
-    void onNewPoint(boolean continous, double lat, double lon, double elev, double speed, double track, long time);
+    void onNewPoint(boolean continous, double lat, double lon, double elev, double speed, double track, double accuracy, long time);
 }

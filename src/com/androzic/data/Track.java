@@ -50,6 +50,8 @@ public class Track
 		public double longitude;
 		public double elevation;
 		public double speed;
+		public double bearing;
+		public double accuracy;
 		public long time;
 		// Map position cache fields
 		public boolean dirty = true;
@@ -63,16 +65,20 @@ public class Track
 			longitude = 0;
 			elevation = 0;
 			speed = 0;
+			bearing = 0;
+			accuracy = Double.MAX_VALUE;
 			time = 0;
 		}
 
-		public TrackPoint(boolean cont, double lat, double lon, double elev, double spd, long t)
+		public TrackPoint(boolean cont, double lat, double lon, double elev, double spd, double brn, double acc, long t)
 		{
 			continous = cont;
 			latitude = lat;
 			longitude = lon;
 			elevation = elev;
 			speed = spd;
+			bearing = brn;
+			accuracy = acc;
 			time = t;
 		}
 	};
@@ -101,13 +107,13 @@ public class Track
 		return trackpoints;
 	}
 
-	public void addTrackPoint(boolean continous, double lat, double lon, double elev, double speed, long time)
+	public void addPoint(boolean continous, double lat, double lon, double elev, double speed, double bearing, double accuracy, long time)
 	{
 		if (lastTrackPoint != null)
 		{
 			distance += Geo.distance(lastTrackPoint.latitude, lastTrackPoint.longitude, lat, lon);
 		}
-		lastTrackPoint = new TrackPoint(continous, lat, lon, elev, speed, time);
+		lastTrackPoint = new TrackPoint(continous, lat, lon, elev, speed, bearing, accuracy, time);
 		synchronized (trackpoints)
 		{
 			if (maxPoints > 0 && trackpoints.size() > maxPoints)
