@@ -31,7 +31,7 @@ public class Track
 	public String description;
 	public boolean show;
 	public int color = -1;
-	public int width = 1;
+	public int width = 0;
 
 	public long maxPoints = 0;
 	public double distance;
