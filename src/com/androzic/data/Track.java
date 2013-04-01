@@ -113,7 +113,9 @@ public class Track
 			if (maxPoints > 0 && trackpoints.size() > maxPoints)
 			{
 				// TODO add correct cleaning if preferences changed
-				distance -= Geo.distance(trackpoints.get(0).latitude, trackpoints.get(0).longitude, trackpoints.get(1).latitude, trackpoints.get(1).longitude);
+				TrackPoint fp = trackpoints.get(0);
+				TrackPoint sp = trackpoints.get(1);
+				distance -= Geo.distance(fp.latitude, fp.longitude, sp.latitude, sp.longitude);
 				trackpoints.remove(0);
 			}
 			trackpoints.add(lastTrackPoint);
@@ -138,6 +140,26 @@ public class Track
 	public TrackPoint getLastPoint()
 	{
 		return lastTrackPoint;
+	}
+	
+	public void removePoint(int location) throws IndexOutOfBoundsException
+	{
+		synchronized (trackpoints)
+		{
+			boolean last = location == trackpoints.size() - 1;
+			TrackPoint pp = trackpoints.get(location - 1);
+			TrackPoint cp = trackpoints.get(location);
+			distance -= Geo.distance(pp.latitude, pp.longitude, cp.latitude, cp.longitude);
+			if (! last)
+			{
+				TrackPoint np = trackpoints.get(location + 1);
+				distance -= Geo.distance(cp.latitude, cp.longitude, np.latitude, np.longitude);
+				distance += Geo.distance(pp.latitude, pp.longitude, np.latitude, np.longitude);
+			}
+			trackpoints.remove(location);
+			if (last)
+				lastTrackPoint = pp;
+		}
 	}
 
 	public void cutAfter(int location)
