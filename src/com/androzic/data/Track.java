@@ -175,7 +175,10 @@ public class Track
 			List<TrackPoint> tps = new ArrayList<TrackPoint>(trackpoints.subList(0, location + 1));
 			trackpoints.clear();
 			trackpoints.addAll(tps);
-			lastTrackPoint = trackpoints.get(trackpoints.size() - 1);
+			if (trackpoints.size() > 0)
+				lastTrackPoint = trackpoints.get(trackpoints.size() - 1);
+			else
+				lastTrackPoint = null;
 		}
 	}
 
