@@ -1,6 +1,6 @@
 /*
  * Androzic - android navigation client that uses OziExplorer maps (ozf2, ozfx3).
- * Copyright (C) 2010-2012  Andrey Novikov <http://andreynovikov.info/>
+ * Copyright (C) 2010-2013  Andrey Novikov <http://andreynovikov.info/>
  *
  * This file is part of Androzic application.
  *
@@ -28,12 +28,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+
 import com.androzic.BaseApplication;
 import com.androzic.map.Tile;
-
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Bitmap.CompressFormat;
+import com.androzic.map.TileRAMCache;
 
 public class TileFactory
 {
@@ -56,7 +58,12 @@ public class TileFactory
 
 	public static void downloadTile(TileProvider provider, Tile t)
 	{
-		t.bitmap = downloadTile(provider, t.x, t.y, t.zoomLevel);
+		Bitmap bitmap = downloadTile(provider, t.x, t.y, t.zoomLevel);
+		if ( bitmap != null )
+		{
+			t.bitmap = bitmap;
+			t.generated = false;
+		}
 	}
 
 	public static byte[] loadTile(TileProvider provider, int tx, int ty, byte z)
@@ -90,6 +97,43 @@ public class TileFactory
 		byte[] data = loadTile(provider, t.x, t.y, t.zoomLevel);
 		if (data != null)
 			t.bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+	}
+	
+	public static void generateTile(TileProvider provider, TileRAMCache cache, Tile t)
+	{
+		byte parentTileZoom = (byte) (t.zoomLevel - 1);
+		int parentTileX = t.x / 2, parentTileY = t.y / 2, scale = 2;
+
+		// Search for parent tile
+		for (; parentTileZoom >= 0; parentTileZoom--, parentTileX /= 2, parentTileY /= 2, scale *= 2)
+		{
+			Tile parentTile = new Tile(parentTileX, parentTileY, parentTileZoom);
+
+			if (cache.containsKey(parentTile.getKey()))
+				parentTile = cache.get(parentTile.getKey());
+			else
+				TileFactory.loadTile(provider, parentTile);
+
+			if (parentTile.bitmap != null && scale <= parentTile.bitmap.getWidth() && scale <= parentTile.bitmap.getHeight())
+			{
+				Matrix matrix = new Matrix();
+				matrix.postScale(scale, scale);
+
+				int miniTileWidth = parentTile.bitmap.getWidth() / scale;
+				int miniTileHeight = parentTile.bitmap.getHeight() / scale;
+				int fromX = (t.x % scale) * miniTileWidth;
+				int fromY = (t.y % scale) * miniTileHeight;
+
+				// Create mini bitmap which will be stretched to tile
+				Bitmap miniTileBitmap = Bitmap.createBitmap(parentTile.bitmap, fromX, fromY, miniTileWidth, miniTileHeight);
+
+				// Create tile bitmap from mini bitmap
+				t.bitmap = Bitmap.createBitmap(miniTileBitmap, 0, 0, miniTileWidth, miniTileHeight, matrix, false);
+				t.generated = true;
+				miniTileBitmap.recycle();
+				break;
+			}
+		}
 	}
 
 	public static void saveTile(TileProvider provider, byte[] dat, int tx, int ty, byte z)

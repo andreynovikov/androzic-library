@@ -2,7 +2,7 @@
  * Copyright 2010 mapsforge.org
  *
  * Androzic - android navigation client that uses OziExplorer maps (ozf2, ozfx3).
- * Copyright (C) 2010-2012  Andrey Novikov <http://andreynovikov.info/>
+ * Copyright (C) 2010-2013  Andrey Novikov <http://andreynovikov.info/>
  *
  * This file is part of Androzic application.
  *
@@ -34,6 +34,11 @@ public class Tile
 	public Bitmap bitmap = null;
 	
 	private final int hashCode;
+
+	/**
+	 * Indicates whether tile is auto generated from other tiles
+	 */
+	public boolean generated = false;
 
 	/**
 	 * X number of this tile.

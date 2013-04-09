@@ -1,6 +1,6 @@
 /*
  * Androzic - android navigation client that uses OziExplorer maps (ozf2, ozfx3).
- * Copyright (C) 2010-2012  Andrey Novikov <http://andreynovikov.info/>
+ * Copyright (C) 2010-2013  Andrey Novikov <http://andreynovikov.info/>
  *
  * This file is part of Androzic application.
  *
@@ -82,7 +82,7 @@ public class TileController extends Thread
 				}
 				tileMap.remove(t.getKey());
 				TileFactory.downloadTile(provider, t);
-				if (t.bitmap != null)
+				if (t.bitmap != null && !t.generated)
 				{
 					TileFactory.saveTile(provider, t);
 					cache.put(t);
@@ -132,6 +132,9 @@ public class TileController extends Thread
 			TileFactory.loadTile(provider, t);
 			if (t.bitmap == null)
 			{
+				TileFactory.generateTile(provider, cache, t);
+				if (t.bitmap != null)
+					cache.put(t);
 				tileMap.put(key, t);
 				synchronized (pendingList)
 				{
@@ -148,6 +151,14 @@ public class TileController extends Thread
 			}
 		}
 		return t;
+	}
+	
+	public void startTileDownloading()
+	{
+		synchronized (this)
+		{
+			notifyAll();
+		}
 	}
 
 	/**
