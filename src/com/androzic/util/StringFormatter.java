@@ -59,6 +59,11 @@ public class StringFormatter
 		return dist[0] + " " + dist[1];
 	}
 
+	public static final String distanceH(double distance, String format)
+	{
+		return distanceH(distance, format, 2000);
+	}
+
 	public static final String distanceH(double distance, String format, int threshold)
 	{
 		String[] dist = distanceC(distance, format, threshold);
@@ -72,10 +77,14 @@ public class StringFormatter
 
 	public static final String[] distanceC(final double distance, int threshold)
 	{
-//		return new String[] {String.valueOf(Math.round(dist)), distunit};
 		return distanceC(distance, "%.0f", threshold);
 	}
 
+	public static final String[] distanceC(final double distance, final String format)
+	{
+		return distanceC(distance, format, 2000);
+	}
+	
 	public static final String[] distanceC(final double distance, final String format, int threshold)
 	{
 		double dist = distance * distanceShortFactor;
