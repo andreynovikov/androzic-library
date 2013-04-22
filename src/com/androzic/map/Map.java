@@ -143,7 +143,10 @@ public class Map implements Serializable
 		cache = null;
 		mapClipPath = null;
 		if (savedZoom != 0)
+		{
 			zoom = savedZoom;
+			bind();
+		}
 		savedZoom = 0;
 		borderPaint = null;
 	}
