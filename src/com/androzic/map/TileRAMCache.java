@@ -59,12 +59,13 @@ public class TileRAMCache
 	private LinkedHashMap<Long, Tile> createMap(final int initialCapacity)
 	{
 		return new LinkedHashMap<Long, Tile>(initialCapacity + 1, LOAD_FACTOR, true) {
-			private static final long serialVersionUID = 2L;
+			private static final long serialVersionUID = 3L;
 
 			@Override
 			public Tile remove(Object key) {
 				Tile tile = super.remove(key);
-				tile.bitmap.recycle();
+				if (tile.bitmap != null)
+					tile.bitmap.recycle();
 				tile.bitmap = null;
 				return tile;
 			}
@@ -101,7 +102,8 @@ public class TileRAMCache
 		{
 			for (Tile tile : map.values())
 			{
-				tile.bitmap.recycle();
+				if (tile.bitmap != null)
+					tile.bitmap.recycle();
 				tile.bitmap = null;
 			}
 			map.clear();
