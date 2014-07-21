@@ -881,11 +881,14 @@ public class Map implements Serializable
 		
 		info.add("corners:");
 
-		i = 1;
-		for (MapPoint mp : cornerMarkers)
+		if (cornerMarkers != null)
 		{
-			info.add(String.format("\t%02d: x: %d y: %d lat: %f lon: %f", i, mp.x, mp.y, mp.lat, mp.lon));
-			i++;
+			i = 1;
+			for (MapPoint mp : cornerMarkers)
+			{
+				info.add(String.format("\t%02d: x: %d y: %d lat: %f lon: %f", i, mp.x, mp.y, mp.lat, mp.lon));
+				i++;
+			}
 		}
 		
 		if (llGrid != null)
