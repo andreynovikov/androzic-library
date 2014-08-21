@@ -26,15 +26,15 @@ public class MapPoint implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
-	int		x;
-	int		y;
+	public int x;
+	public int y;
 
-	double	lat;
-	double	lon;
+	public double lat;
+	public double lon;
 	
 	int zone;
-	double	n;
-	double	e;
+	double n;
+	double e;
 	int hemisphere;
 
 	public MapPoint()

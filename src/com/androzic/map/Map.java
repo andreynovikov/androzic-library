@@ -85,12 +85,12 @@ public class Map implements Serializable
 	protected double savedZoom;
 	private LinearBinding binding = new LinearBinding();
 	protected int pixels;
-	transient private Path mapClipPath;
-	transient public Throwable loadError;
-	transient private OzfReader ozf;
-	transient protected TileRAMCache cache;
-	transient protected Bounds bounds;
-	transient private Paint borderPaint;
+	protected transient Path mapClipPath;
+	public transient Throwable loadError;
+	private transient OzfReader ozf;
+	protected transient TileRAMCache cache;
+	protected transient Bounds bounds;
+	protected transient Paint borderPaint;
 	
 	public Map(String filepath)
 	{
@@ -436,6 +436,13 @@ public class Map implements Serializable
 	public int getScaledHeight()
 	{
 		return (int) (height * zoom);
+	}
+	
+	public void getMapCenter(double[] center)
+	{
+		int x = getScaledWidth() / 2;
+		int y = getScaledHeight() / 2;
+		getLatLonByXY(x, y, center);
 	}
 
 	synchronized public boolean drawMap(double[] loc, int[] lookAhead, int width, int height, boolean cropBorder, boolean drawBorder, Canvas c) throws OutOfMemoryError
