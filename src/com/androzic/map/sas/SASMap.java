@@ -26,6 +26,10 @@ import java.util.List;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Paint.Style;
+import android.graphics.Path;
 import android.util.Log;
 import android.view.View;
 
@@ -94,10 +98,19 @@ public class SASMap extends Map
 	@Override
 	public void activate(View view, int pixels) throws IOException, OutOfMemoryError
 	{
+		mapClipPath = new Path();
 		setZoom(savedZoom == 0 ? zoom : savedZoom);
 		savedZoom = 0;
 		int cacheSize = (int) (pixels / (TILE_WIDTH * TILE_HEIGHT) * 4);
 		cache = new TileRAMCache(cacheSize);
+
+		borderPaint = new Paint();
+        borderPaint.setAntiAlias(true);
+        borderPaint.setStrokeWidth(3);
+        borderPaint.setColor(Color.RED);
+        borderPaint.setAlpha(128);
+        borderPaint.setStyle(Style.STROKE);
+
 		isActive = true;
 	}
 	
@@ -110,6 +123,8 @@ public class SASMap extends Map
 			zoom = savedZoom;
 		savedZoom = 0;
 		cache = null;
+		mapClipPath = null;
+		//borderPaint = null;
 	}
 	
 	public boolean activated()
@@ -122,16 +137,9 @@ public class SASMap extends Map
 	{
 		if (! isActive)
 			mpp = projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(Math.toRadians(lat)) / Math.pow(2.0, (srcZoom + 8));
-		return lat < 85.051129 && lat > -85.047336;
+		return super.coversLatLon(lat, lon);
 	}
 
-	@Override
-	public boolean coversScreen(int[] map_xy, int width, int height)
-	{
-		// TODO Should check North and South edges
-		return true;
-	}
-	
 	@Override
 	public boolean containsArea(Bounds area)
 	{
@@ -143,10 +151,19 @@ public class SASMap extends Map
 	@Override
 	public boolean drawMap(double[] loc, int[] lookAhead, int width, int height, boolean cropBorder, boolean drawBorder, Canvas c) throws OutOfMemoryError
 	{
+		if (isActive == false)
+			return false;
+
 		int[] map_xy = new int[2];
 		getXYByLatLon(loc[0], loc[1], map_xy);
 		map_xy[0] -= lookAhead[0];
 		map_xy[1] -= lookAhead[1];
+
+		Path clipPath = new Path();
+
+		if (cropBorder || drawBorder)
+			mapClipPath.offset(-map_xy[0] + width / 2, -map_xy[1] + height / 2, clipPath);
+
 		int osm_x = map_xy[0] / TILE_WIDTH;
 		int osm_y = map_xy[1] / TILE_HEIGHT;
 		
@@ -203,6 +220,10 @@ public class SASMap extends Map
 				}
 			}
 		}
+		
+		if (drawBorder)
+			c.drawPath(clipPath, borderPaint);
+
 		return result;
 	}
 
@@ -247,20 +268,6 @@ public class SASMap extends Map
 	    return 0.5 * Math.log((1 + arg) / (1 - arg));
 	}
 	
-	@Override
-	public Bounds getBounds()
-	{
-		if (bounds == null)
-		{
-			bounds = new Bounds();
-			bounds.minLat = -85.047336;
-			bounds.maxLat = 85.051129;
-			bounds.minLon = -180;
-			bounds.maxLon = 180;
-		}
-		return bounds;
-	}
-
 	@Override
 	public boolean getLatLonByXY(int x, int y, double[] ll)
 	{
@@ -319,8 +326,8 @@ public class SASMap extends Map
 	{
 		if (srcZoom >= maxZoom)
 			return 0.0;
-		Log.e("SAS", "Next zoom: " + Math.pow(2, this.srcZoom + 1 - defZoom));
-		return Math.pow(2, this.srcZoom + 1 - defZoom);
+		Log.e("SAS", "Next zoom: " + Math.pow(2, srcZoom + 1 - defZoom));
+		return Math.pow(2, srcZoom + 1 - defZoom);
 	}
 
 	@Override
@@ -328,8 +335,8 @@ public class SASMap extends Map
 	{
 		if (srcZoom <= minZoom)
 			return 0.0;
-		Log.e("SAS", "Prev zoom: " + Math.pow(2, this.srcZoom - 1 - defZoom));
-		return Math.pow(2, this.srcZoom - 1 - defZoom);
+		Log.e("SAS", "Prev zoom: " + Math.pow(2, srcZoom - 1 - defZoom));
+		return Math.pow(2, srcZoom - 1 - defZoom);
 	}
 
 	@Override
@@ -344,7 +351,7 @@ public class SASMap extends Map
 //		setZoom(srcZoom + Math.log(factor)/Math.log(2));
 
 		int zDiff = (int) (Math.log(z) / Math.log(2));
-		Log.e("ONLINE", "Zoom: " + z + " diff: " + zDiff);
+		Log.e("SAS", "Zoom: " + z + " diff: " + zDiff);
 
 		srcZoom = (byte) (defZoom + zDiff);
 		
@@ -364,18 +371,31 @@ public class SASMap extends Map
 		
 //		zoom = Math.pow(2, this.srcZoom - defZoom);
 	    title = String.format("%s (%d)", name, srcZoom);
+	    
+		mapClipPath.rewind();
+		mapClipPath.setLastPoint((float) (cornerMarkers[0].x * zoom), (float) (cornerMarkers[0].y * zoom));
+		for (int i = 1; i < cornerMarkers.length; i++)
+			mapClipPath.lineTo((float) (cornerMarkers[i].x * zoom), (float) (cornerMarkers[i].y * zoom));
+		mapClipPath.close();
 	}
 
 	public int getScaledWidth()
 	{
-		return (int) (Math.pow(2.0, srcZoom) * TILE_WIDTH * zoom);
+		return (int) (Math.pow(2.0, srcZoom - 1) * TILE_WIDTH * zoom);
 	}
 
 	public int getScaledHeight()
 	{
-		return (int) (Math.pow(2.0, srcZoom) * TILE_HEIGHT * zoom);
+		return (int) (Math.pow(2.0, srcZoom - 1) * TILE_HEIGHT * zoom);
 	}
-
+	
+	public void getMapCenter(double[] center)
+	{
+		int x = (int) ((cornerMarkers[2].x + cornerMarkers[0].x) / 2 * zoom);
+		int y = (int) ((cornerMarkers[2].y + cornerMarkers[0].y) / 2 * zoom);
+		getLatLonByXY(x, y, center);
+	}
+	
 	public List<String> info()
 	{
 		ArrayList<String> info = new ArrayList<String>();
