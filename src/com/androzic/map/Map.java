@@ -424,7 +424,7 @@ public class Map implements Serializable
 	public void setTemporaryZoom(double zoom)
 	{
 		savedZoom = this.zoom;
-		Log.e("OZI", "setTemporaryZoom: " + zoom);
+		Log.e("MAP", "setTemporaryZoom: " + zoom);
 		setZoom(zoom);
 	}
 	

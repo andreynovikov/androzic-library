@@ -49,6 +49,7 @@ public class SASMap extends Map
 	private boolean isActive = false;
 	private byte srcZoom;
 	private byte defZoom;
+	private double dynZoom;
 
 	public String path;
 	public String ext;
@@ -76,6 +77,8 @@ public class SASMap extends Map
 		srcZoom = maxZoom;
 		defZoom = maxZoom;
 		zoom = 1.0;
+		dynZoom = 1.0;
+
 	    /*
 	     * The distance represented by one pixel (S) is given by
 	     * S=C*cos(y)/2^(z+8) 
@@ -98,11 +101,10 @@ public class SASMap extends Map
 	@Override
 	public void activate(View view, int pixels) throws IOException, OutOfMemoryError
 	{
+		this.pixels = pixels;
 		mapClipPath = new Path();
 		setZoom(savedZoom == 0 ? zoom : savedZoom);
 		savedZoom = 0;
-		int cacheSize = (int) (pixels / (TILE_WIDTH * TILE_HEIGHT) * 4);
-		cache = new TileRAMCache(cacheSize);
 
 		borderPaint = new Paint();
         borderPaint.setAntiAlias(true);
@@ -124,28 +126,12 @@ public class SASMap extends Map
 		savedZoom = 0;
 		cache = null;
 		mapClipPath = null;
-		//borderPaint = null;
+		borderPaint = null;
 	}
 	
 	public boolean activated()
 	{
 		return isActive;
-	}
-	
-	@Override
-	public boolean coversLatLon(double lat, double lon)
-	{
-		if (! isActive)
-			mpp = projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(Math.toRadians(lat)) / Math.pow(2.0, (srcZoom + 8));
-		return super.coversLatLon(lat, lon);
-	}
-
-	@Override
-	public boolean containsArea(Bounds area)
-	{
-		// FIXME disabled sas maps in adjacent maps
-		return false;
-//		return area.minLat < 85.051129 && area.maxLat > -85.047336;
 	}
 	
 	@Override
@@ -164,20 +150,23 @@ public class SASMap extends Map
 		if (cropBorder || drawBorder)
 			mapClipPath.offset(-map_xy[0] + width / 2, -map_xy[1] + height / 2, clipPath);
 
-		int osm_x = map_xy[0] / TILE_WIDTH;
-		int osm_y = map_xy[1] / TILE_HEIGHT;
-		
-		int x = (int) Math.round(map_xy[0] - osm_x * TILE_WIDTH);
-		int y = (int) Math.round(map_xy[1] - osm_y * TILE_HEIGHT);
+		int tile_w = (int) (TILE_WIDTH * dynZoom);
+		int tile_h = (int) (TILE_HEIGHT * dynZoom);
 
-		int tiles_per_x = Math.round(width * 1.f / TILE_WIDTH / 2 + .5f);
-		int tiles_per_y = Math.round(height * 1.f / TILE_HEIGHT / 2 + .5f);
-
-		int c_min = osm_x - tiles_per_x;
-		int c_max = osm_x + tiles_per_x + 1;
+		int sas_x = map_xy[0] / tile_w;
+		int sas_y = map_xy[1] / tile_h;
 		
-		int r_min = osm_y - tiles_per_y;
-		int r_max = osm_y + tiles_per_y + 1;
+		int x = (int) Math.round(map_xy[0] - sas_x * tile_w);
+		int y = (int) Math.round(map_xy[1] - sas_y * tile_h);
+
+		int tiles_per_x = Math.round(width * 1.f / tile_w / 2 + .5f);
+		int tiles_per_y = Math.round(height * 1.f / tile_h / 2 + .5f);
+
+		int c_min = sas_x - tiles_per_x;
+		int c_max = sas_x + tiles_per_x + 1;
+		
+		int r_min = sas_y - tiles_per_y;
+		int r_max = sas_y + tiles_per_y + 1;
 		
 		boolean result = true;
 		
@@ -202,15 +191,15 @@ public class SASMap extends Map
 			result = false;
 		}
 		
-		int txb = width / 2 - x - (osm_x - c_min) * TILE_WIDTH;
-		int tyb = height / 2 - y - (osm_y - r_min) * TILE_HEIGHT;
+		int txb = width / 2 - x - (sas_x - c_min) * tile_w;
+		int tyb = height / 2 - y - (sas_y - r_min) * tile_h;
 		
 		for (int i = r_min; i < r_max; i++)
 		{
 			for (int j = c_min; j < c_max; j++)
 			{
-				int tx = txb + (j - c_min) * TILE_WIDTH;
-				int ty = tyb + (i - r_min) * TILE_HEIGHT;
+				int tx = txb + (j - c_min) * tile_w;
+				int ty = tyb + (i - r_min) * tile_h;
 			
 				Bitmap tile = getTile(j, i);
 
@@ -218,10 +207,14 @@ public class SASMap extends Map
 				{
 					c.drawBitmap(tile, tx, ty, null);
 				}
+				else
+				{
+					result = false;
+				}
 			}
 		}
 		
-		if (drawBorder)
+		if (drawBorder && borderPaint != null)
 			c.drawPath(clipPath, borderPaint);
 
 		return result;
@@ -241,11 +234,16 @@ public class SASMap extends Map
 				if (tile.bitmap == null)
 				{
 					SASTileFactory.generateTile(this, cache, tile);
-					if (tile.bitmap != null)
-						cache.put(tile);
 				}
-				else
+				if (tile.bitmap != null)
 				{
+					if (dynZoom != 1.0)
+					{
+				        int sw = (int) (dynZoom * TILE_WIDTH);
+				        int sh = (int) (dynZoom * TILE_HEIGHT);
+						Bitmap scaled = Bitmap.createScaledBitmap(tile.bitmap, sw, sh, true);
+						tile.bitmap = scaled;
+					}
 					cache.put(tile);
 				}
 			}
@@ -272,18 +270,20 @@ public class SASMap extends Map
 	@Override
 	public boolean getLatLonByXY(int x, int y, double[] ll)
 	{
-		double dx = x * 1.0 / TILE_WIDTH;
-		double dy = y * 1.0 / TILE_HEIGHT;
+		int map_x = (int) (x * 1. / dynZoom);
+		int map_y = (int) (y * 1. / dynZoom);
+		double dx = map_x * 1. / TILE_WIDTH;
+		double dy = map_y * 1. / TILE_HEIGHT;
 		
 		double n = Math.pow(2.0, srcZoom);
 		if (ellipsoid)
 		{
-			ll[0] = (y-TILE_HEIGHT*n/2)/-(TILE_HEIGHT*n/(2*Math.PI));
+			ll[0] = (map_y-TILE_HEIGHT*n/2)/-(TILE_HEIGHT*n/(2*Math.PI));
 			ll[0] = (2*Math.atan(Math.exp(ll[0]))-Math.PI/2)*180/Math.PI;
 
 			double Zu = Math.toRadians(ll[0]);
 			double Zum1 = Zu+1;
-			double yy = (y-TILE_HEIGHT*n/2);
+			double yy = (map_y-TILE_HEIGHT*n/2);
 			int i=100000;
 			while ((Math.abs(Zum1-Zu)>0.0000001)&&(i!=0))
 			{
@@ -308,16 +308,16 @@ public class SASMap extends Map
 	{
 		double n = Math.pow(2.0, srcZoom);
 		
-		xy[0] = (int) Math.floor((lon + 180.0) / 360.0 * n * TILE_WIDTH);
+		xy[0] = (int) Math.floor((lon + 180.0) / 360.0 * n * TILE_WIDTH * dynZoom);
 
 		if (ellipsoid)
 		{
 			double z = Math.sin(Math.toRadians(lat));
-			xy[1] = (int) Math.floor((1 - (atanh(z)-0.0818197*atanh(0.0818197*z)) / Math.PI) / 2 * n * TILE_HEIGHT);
+			xy[1] = (int) Math.floor((1 - (atanh(z)-0.0818197*atanh(0.0818197*z)) / Math.PI) / 2 * n * TILE_HEIGHT * dynZoom);
 		}
 		else
 		{
-			xy[1] = (int) Math.floor((1 - (Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI)) / 2 * n * TILE_HEIGHT);
+			xy[1] = (int) Math.floor((1 - (Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI)) / 2 * n * TILE_HEIGHT * dynZoom);
 		}
 		return true;
 	}
@@ -325,19 +325,25 @@ public class SASMap extends Map
 	@Override
 	public double getNextZoom()
 	{
-		if (srcZoom >= maxZoom)
+		int z = defZoom + (int) (Math.log(zoom) / Math.log(2));
+		if (z - maxZoom > 1)
 			return 0.0;
-		Log.e("SAS", "Next zoom: " + Math.pow(2, srcZoom + 1 - defZoom));
-		return Math.pow(2, srcZoom + 1 - defZoom);
+		else if (z < minZoom || z > maxZoom)
+			return zoom * 2;
+		else
+			return Math.pow(2, srcZoom + 1 - defZoom);
 	}
 
 	@Override
 	public double getPrevZoom()
 	{
-		if (srcZoom <= minZoom)
+		int z = defZoom + (int) (Math.log(zoom) / Math.log(2));
+		if (z - minZoom < -1)
 			return 0.0;
-		Log.e("SAS", "Prev zoom: " + Math.pow(2, srcZoom - 1 - defZoom));
-		return Math.pow(2, srcZoom - 1 - defZoom);
+		else if (z < minZoom || z > maxZoom)
+			return zoom / 2;
+		else
+			return Math.pow(2, srcZoom - 1 - defZoom);
 	}
 
 	@Override
@@ -349,8 +355,6 @@ public class SASMap extends Map
 	@Override
 	public void setZoom(double z)
 	{
-//		setZoom(srcZoom + Math.log(factor)/Math.log(2));
-
 		int zDiff = (int) (Math.log(z) / Math.log(2));
 		Log.e("SAS", "Zoom: " + z + " diff: " + zDiff);
 
@@ -368,9 +372,17 @@ public class SASMap extends Map
 		}
 
 		zoom = z;
-		Log.e("SAS", "z: " + srcZoom + " zoom: " + zoom + " diff: " + zDiff);
-		
-//		zoom = Math.pow(2, this.srcZoom - defZoom);
+		dynZoom = zoom / Math.pow(2, srcZoom - defZoom);
+		if (Math.abs(dynZoom - 1) < 0.0078125)
+			dynZoom = 1.0;
+		Log.e("SAS", "z: " + srcZoom + " diff: " + zDiff + " zoom: " + zoom + " dymZoom: " + dynZoom);
+
+		if (cache != null)
+			cache.destroy();
+		int cacheSize = (int) (pixels * 1. / (TILE_WIDTH * dynZoom * TILE_HEIGHT * dynZoom) * 3);
+		Log.e("SAS", "Cache size: " + cacheSize);
+		cache = new TileRAMCache(cacheSize);
+
 	    title = String.format("%s (%d)", name, srcZoom);
 	    
 		mapClipPath.rewind();
