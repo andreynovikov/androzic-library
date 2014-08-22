@@ -231,11 +231,12 @@ public class SASMap extends Map
 	{
 		try
 		{
-			long key = Tile.getKey(x, y, srcZoom);
+			// SAS counts zooms from 1, not from 0
+			long key = Tile.getKey(x, y, (byte) (srcZoom + 1));
 			Tile tile = cache.get(key);
 			if (tile == null)
 			{
-				tile = new Tile(x, y, srcZoom);
+				tile = new Tile(x, y, (byte) (srcZoom + 1));
 				SASTileFactory.loadTile(this, tile);
 				if (tile.bitmap == null)
 				{
@@ -274,7 +275,7 @@ public class SASMap extends Map
 		double dx = x * 1.0 / TILE_WIDTH;
 		double dy = y * 1.0 / TILE_HEIGHT;
 		
-		double n = Math.pow(2.0, srcZoom - 1);
+		double n = Math.pow(2.0, srcZoom);
 		if (ellipsoid)
 		{
 			ll[0] = (y-TILE_HEIGHT*n/2)/-(TILE_HEIGHT*n/(2*Math.PI));
@@ -305,7 +306,7 @@ public class SASMap extends Map
 	@Override
 	public boolean getXYByLatLon(double lat, double lon, int[] xy)
 	{
-		double n = Math.pow(2.0, srcZoom - 1);
+		double n = Math.pow(2.0, srcZoom);
 		
 		xy[0] = (int) Math.floor((lon + 180.0) / 360.0 * n * TILE_WIDTH);
 
@@ -381,12 +382,12 @@ public class SASMap extends Map
 
 	public int getScaledWidth()
 	{
-		return (int) (Math.pow(2.0, srcZoom - 1) * TILE_WIDTH * zoom);
+		return (int) (Math.pow(2.0, srcZoom) * TILE_WIDTH * zoom);
 	}
 
 	public int getScaledHeight()
 	{
-		return (int) (Math.pow(2.0, srcZoom - 1) * TILE_HEIGHT * zoom);
+		return (int) (Math.pow(2.0, srcZoom) * TILE_HEIGHT * zoom);
 	}
 	
 	public void getMapCenter(double[] center)
