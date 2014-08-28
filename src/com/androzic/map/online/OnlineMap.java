@@ -98,6 +98,8 @@ public class OnlineMap extends Map
 	@Override
 	public void deactivate()
 	{
+		if (!isActive)
+			return;
 		isActive = false;
 		tileController.interrupt();
 		cache.destroy();
