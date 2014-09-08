@@ -112,7 +112,7 @@ public class StringFormatter
 				final double coord = Math.abs(coordinate);
 				final int degrees = (int) Math.floor(coord);
 				final double minutes = (coord - degrees) * 60;
-				return coordIntFormat.format(sign*degrees) + "° "
+				return coordIntFormat.format(sign*degrees) + "\u00B0 "
 						+ coordMinFormat.format(minutes) + "'";
 			}
 			case 2:
@@ -123,7 +123,7 @@ public class StringFormatter
 				final double min = (coord - degrees) * 60;
 				final int minutes = (int) Math.floor(min);
 				final double seconds = (min - minutes) * 60;
-				return coordIntFormat.format(sign*degrees) + "° "
+				return coordIntFormat.format(sign*degrees) + "\u00B0 "
 						+ coordIntFormat.format(minutes) + "' "
 						+ coordSecFormat.format(seconds) + "\"";
 			}
@@ -160,19 +160,19 @@ public class StringFormatter
 
 	public static String bearingH(double bearing)
 	{
-		return String.format("%.0f", bearing)+"°";
+		return String.format("%.0f", bearing)+"\u00B0";
 	}
 
 	public static final String bearingSimpleH(double bearing)
 	{
-		if (bearing <  22 || bearing >= 338) return "N";
-		if (bearing <  67 && bearing >=  22) return "NE";
-		if (bearing < 112 && bearing >=  67) return "E";
-		if (bearing < 158 && bearing >= 112) return "SE";
-		if (bearing < 202 && bearing >= 158) return "S";
-		if (bearing < 248 && bearing >= 202) return "SW";
-		if (bearing < 292 && bearing >= 248) return "W";
-		if (bearing < 338 && bearing >= 292) return "NW";
+		if (bearing <  22 || bearing >= 338) return "\u2191"; // N
+		if (bearing <  67 && bearing >=  22) return "\u2197"; // NE
+		if (bearing < 112 && bearing >=  67) return "\u2192"; // E
+		if (bearing < 158 && bearing >= 112) return "\u2198"; // SE
+		if (bearing < 202 && bearing >= 158) return "\u2193"; // S
+		if (bearing < 248 && bearing >= 202) return "\u2199"; // SW
+		if (bearing < 292 && bearing >= 248) return "\u2190"; // W
+		if (bearing < 338 && bearing >= 292) return "\u2196"; // NW
 		return ".";
 	}
 	
