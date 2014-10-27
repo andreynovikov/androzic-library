@@ -3,12 +3,12 @@
 
     <style name="BlackTheme" parent="@android:style/Theme.Holo">
         <item name="horizontalPadding">6dip</item>
-        <item name="android:actionOverflowButtonStyle">@style/OverFlow</item>
+<!-- <item name="android:actionOverflowButtonStyle">@style/OverFlow</item>  -->
     </style>
 
     <style name="LightTheme" parent="@android:style/Theme.Holo.Light">
         <item name="horizontalPadding">6dip</item>
-        <item name="android:actionOverflowButtonStyle">@style/OverFlow</item>
+<!-- <item name="android:actionOverflowButtonStyle">@style/OverFlow</item> -->
     </style>
 
     <style name="BlackDialog" parent="@android:style/Theme.Holo.Dialog">
@@ -29,7 +29,9 @@
         <item name="android:divider">?android:attr/dividerHorizontal</item>
     </style>
 
+    <!-- 
     <style name="OverFlow" parent="@android:style/Widget.Holo.ActionButton.Overflow">
         <item name="android:src">@drawable/ic_action_overflow</item>
     </style>
+     -->
 </resources>

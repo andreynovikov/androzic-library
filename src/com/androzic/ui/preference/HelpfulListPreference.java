@@ -66,7 +66,7 @@ public class HelpfulListPreference extends ListPreference
 				((LinearLayout) widgetFrameView).setOrientation(LinearLayout.HORIZONTAL);
 			}
 			widgetFrameView.addView(helpImage, 0);
-			helpImage.setImageResource(R.drawable.ic_action_info);
+			helpImage.setImageResource(R.drawable.ic_info_outline_white_24dp);
 			helpImage.setPadding(helpImage.getPaddingLeft(), helpImage.getPaddingTop(), (int) (mDensity * rightPaddingDip), helpImage.getPaddingBottom());
 			helpImage.setOnClickListener(new OnClickListener() {
 				@Override

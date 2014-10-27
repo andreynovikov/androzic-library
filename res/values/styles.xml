@@ -5,15 +5,7 @@
         <item name="horizontalPadding">6dip</item>
     </style>
 
-    <style name="LightTheme" parent="@android:style/Theme.Light">
-        <item name="horizontalPadding">6dip</item>
-    </style>
-
     <style name="BlackDialog" parent="@android:style/Theme.Dialog">
-        <item name="horizontalPadding">6dip</item>
-    </style>
-
-    <style name="LightDialog" parent="@android:style/Theme.Dialog">
         <item name="horizontalPadding">6dip</item>
     </style>
 
@@ -40,11 +32,11 @@
     <style name="FieldLabel">
         <item name="android:textStyle">bold</item>
     </style>
-    
+
     <style name="FieldLabelWithVerticalPadding" parent="@style/FieldLabel">
         <item name="android:paddingTop">6dip</item>
     </style>
-    
+
     <!-- Lorensius W. L. T <lorenz@londatiga.net> -->
     <style name="Animations" />
 
