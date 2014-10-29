@@ -26,9 +26,9 @@ import java.util.List;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.util.Log;
 import android.view.View;
 
+import com.androzic.Log;
 import com.androzic.map.Map;
 import com.androzic.map.Tile;
 import com.androzic.map.TileRAMCache;

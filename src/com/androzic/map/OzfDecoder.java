@@ -24,10 +24,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import com.androzic.Log;
 import com.jcraft.jzlib.JZlib;
 import com.jcraft.jzlib.ZStream;
-
-import android.util.Log;
 
 public class OzfDecoder
 {

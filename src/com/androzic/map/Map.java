@@ -1,6 +1,6 @@
 /*
  * Androzic - android navigation client that uses OziExplorer maps (ozf2, ozfx3).
- * Copyright (C) 2010-2012  Andrey Novikov <http://andreynovikov.info/>
+ * Copyright (C) 2010-2014  Andrey Novikov <http://andreynovikov.info/>
  *
  * This file is part of Androzic application.
  *
@@ -34,16 +34,16 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
 import android.graphics.Rect;
-import android.util.Log;
 import android.view.View;
 
+import com.androzic.Log;
 import com.jhlabs.Point2D;
 import com.jhlabs.map.proj.Projection;
 import com.jhlabs.map.proj.ProjectionException;
 
 public class Map implements Serializable
 {
-	private static final long serialVersionUID = 5L;
+	private static final long serialVersionUID = 6L;
 
 	private static final double[] zoomLevelsSupported =
 	{
@@ -92,6 +92,10 @@ public class Map implements Serializable
 	protected transient Bounds bounds;
 	protected transient Paint borderPaint;
 	
+	public Map()
+	{
+	}
+
 	public Map(String filepath)
 	{
 		mappath = filepath;
@@ -139,7 +143,9 @@ public class Map implements Serializable
 		if (ozf != null)
 			ozf.close();
 		ozf = null;
-		cache.destroy();
+		//TODO This shouldn't happen but happens
+		if (cache != null)
+			cache.destroy();
 		cache = null;
 		mapClipPath = null;
 		if (savedZoom != 0)
@@ -787,7 +793,7 @@ public class Map implements Serializable
 		a[2][2] = size;
 	}
 	
-	private class LinearBinding implements Serializable
+	private static class LinearBinding implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
 		
@@ -797,24 +803,6 @@ public class Map implements Serializable
 		double[] Klon = new double[3];
 	}
 
-	public class Grid implements Serializable
-	{
-		private static final long serialVersionUID = 1L;
-		
-		public boolean enabled;
-		public double spacing;
-		public boolean autoscale;
-		public int color1;
-		public int color2;
-		public int color3;
-		public double labelSpacing;
-		public int labelForeground;
-		public int labelBackground;
-		public int labelSize;
-		public boolean labelShowEverywhere;
-		public int maxMPP = 0;
-	}
-	
 	public static class Bounds
 	{
     	public double minLat = Double.MAX_VALUE;

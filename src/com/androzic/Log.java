@@ -2,59 +2,98 @@ package com.androzic;
 
 import android.text.TextUtils;
 
-public final class Log {
+public final class Log
+{
+	static int logLevel = android.util.Log.ERROR;
+	static int logMode = 2;
 
-   static int logMode = 1;
-   
-   final static int LOG_MODE_FULL = 1;
-   final static int LOG_MODE_LIGHT = 2;
-   final static int LOG_MODE_NONE = 3;
-   
-   public static void w(String TAG, String msg) {
-	   switch (logMode ){
-	   	case LOG_MODE_FULL:
-		   android.util.Log.w(TAG, getLocation() + msg);
-	   	case LOG_MODE_LIGHT:
-			   android.util.Log.w(TAG, msg);   
-	   }
-   }
-   
-   private static String getLocation() {
-       final String className = Log.class.getName();
-       final StackTraceElement[] traces = Thread.currentThread().getStackTrace();
-       boolean found = false;
+	final static int LOG_MODE_FULL = 1;
+	final static int LOG_MODE_LIGHT = 2;
+	final static int LOG_MODE_NONE = 3;
 
-       for (int i = 0; i < traces.length; i++) {
-           StackTraceElement trace = traces[i];
+	public static void d(String TAG, String msg)
+	{
+		if (logLevel >= android.util.Log.DEBUG)
+			log(android.util.Log.DEBUG, TAG, msg);
+	}
 
-           try {
-               if (found) {
-                   if (!trace.getClassName().startsWith(className)) {
-                       Class<?> clazz = Class.forName(trace.getClassName());
-                       return "[" + getClassName(clazz) + ":" + trace.getMethodName() + ":" + trace.getLineNumber() + "]: ";
-                   }
-               }
-               else if (trace.getClassName().startsWith(className)) {
-                   found = true;
-                   continue;
-               }
-           }
-           catch (ClassNotFoundException e) {
-           }
-       }
+	public static void i(String TAG, String msg)
+	{
+		if (logLevel >= android.util.Log.INFO)
+			log(android.util.Log.INFO, TAG, msg);
+	}
 
-       return "[]: ";
-   }
+	public static void w(String TAG, String msg)
+	{
+		if (logLevel >= android.util.Log.WARN)
+			log(android.util.Log.WARN, TAG, msg);
+	}
 
-   private static String getClassName(Class<?> clazz) {
-       if (clazz != null) {
-           if (!TextUtils.isEmpty(clazz.getSimpleName())) {
-               return clazz.getSimpleName();
-           }
+	public static void e(String TAG, String msg)
+	{
+		if (logLevel >= android.util.Log.ERROR)
+			log(android.util.Log.ERROR, TAG, msg);
+	}
 
-           return getClassName(clazz.getEnclosingClass());
-       }
+	public static void log(int priority, String TAG, String msg)
+	{
+		switch (logMode)
+		{
+			case LOG_MODE_FULL:
+				android.util.Log.println(priority, TAG, getLocation() + msg);
+			case LOG_MODE_LIGHT:
+				android.util.Log.println(priority, TAG, msg);
+		}
+	}
 
-       return "";
-   }
+	private static String getLocation()
+	{
+		final String className = Log.class.getName();
+		final StackTraceElement[] traces = Thread.currentThread()
+				.getStackTrace();
+		boolean found = false;
+
+		for (int i = 0; i < traces.length; i++)
+		{
+			StackTraceElement trace = traces[i];
+
+			try
+			{
+				if (found)
+				{
+					if (!trace.getClassName().startsWith(className))
+					{
+						Class<?> clazz = Class.forName(trace.getClassName());
+						return "[" + getClassName(clazz) + ":"
+								+ trace.getMethodName() + ":"
+								+ trace.getLineNumber() + "]: ";
+					}
+				}
+				else if (trace.getClassName().startsWith(className))
+				{
+					found = true;
+					continue;
+				}
+			}
+			catch (ClassNotFoundException e)
+			{
+			}
+		}
+
+		return "[]: ";
+	}
+
+	private static String getClassName(Class<?> clazz)
+	{
+		if (clazz != null) {
+			if (!TextUtils.isEmpty(clazz.getSimpleName()))
+			{
+				return clazz.getSimpleName();
+			}
+
+			return getClassName(clazz.getEnclosingClass());
+		}
+
+		return "";
+	}
 }

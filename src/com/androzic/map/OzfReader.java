@@ -23,8 +23,9 @@ package com.androzic.map;
 import java.io.File;
 import java.io.IOException;
 
+import com.androzic.Log;
+
 import android.graphics.Bitmap;
-import android.util.Log;
 
 public class OzfReader
 {
