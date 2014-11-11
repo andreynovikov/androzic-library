@@ -1,6 +1,6 @@
 /*
  * Androzic - android navigation client that uses OziExplorer maps (ozf2, ozfx3).
- * Copyright (C) 2010-2013 Andrey Novikov <http://andreynovikov.info/>
+ * Copyright (C) 2010-2014 Andrey Novikov <http://andreynovikov.info/>
  * 
  * This file is part of Androzic application.
  * 
@@ -27,6 +27,8 @@ import com.androzic.util.Geo;
 
 public class Track
 {
+	private static final int SEGMENT_CAPACITY = 5000;
+
 	public String name;
 	public String description;
 	public boolean show;
@@ -40,7 +42,8 @@ public class Track
 	public boolean editing = false;
 	public int editingPos = -1;
 
-	private final List<TrackPoint> trackpoints = new ArrayList<TrackPoint>(0);
+	private final List<TrackSegment> segments = new ArrayList<TrackSegment>(1);
+	private TrackSegment lastSegment;
 	private TrackPoint lastTrackPoint;
 
 	public class TrackPoint
@@ -81,7 +84,23 @@ public class Track
 			accuracy = acc;
 			time = t;
 		}
-	};
+	}
+	
+	public class TrackSegment
+	{
+		public boolean independent;
+		private final Bounds bounds = new Bounds();
+		private final List<TrackPoint> trackpoints = new ArrayList<TrackPoint>(0);
+		
+		public TrackSegment()
+		{
+		}
+		
+		public List<TrackPoint> getPoints()
+		{
+			return trackpoints;
+		}
+	}
 
 	public Track()
 	{
@@ -94,6 +113,8 @@ public class Track
 		description = pdescr;
 		show = pshow;
 		distance = 0;
+		lastSegment = new TrackSegment();
+		segments.add(lastSegment);
 	}
 
 	public Track(String pname, String pdescr, boolean pshow, long max)
@@ -102,8 +123,28 @@ public class Track
 		maxPoints = max;
 	}
 
-	public List<TrackPoint> getPoints()
+	public List<TrackSegment> getSegments()
 	{
+		return segments;
+	}
+
+	public List<TrackPoint> getPoints(Bounds area)
+	{
+		List<TrackPoint> trackpoints = new ArrayList<TrackPoint>(0);		
+		for (TrackSegment segment : segments)
+		{
+			// We do not check particular points for performance
+			if (segment.bounds.intersects(area))
+				trackpoints.addAll(segment.trackpoints);
+		}
+		return trackpoints;
+	}
+	
+	public List<TrackPoint> getAllPoints()
+	{
+		List<TrackPoint> trackpoints = new ArrayList<TrackPoint>(0);		
+		for (TrackSegment segment : segments)
+			trackpoints.addAll(segment.trackpoints);
 		return trackpoints;
 	}
 
@@ -114,25 +155,45 @@ public class Track
 			distance += Geo.distance(lastTrackPoint.latitude, lastTrackPoint.longitude, lat, lon);
 		}
 		lastTrackPoint = new TrackPoint(continous, lat, lon, elev, speed, bearing, accuracy, time);
-		synchronized (trackpoints)
+		if (!continous || lastSegment.trackpoints.size() > SEGMENT_CAPACITY)
 		{
-			if (maxPoints > 0 && trackpoints.size() > maxPoints)
+			synchronized (segments)
+			{
+				lastSegment = new TrackSegment();
+				lastSegment.independent = !continous;
+				segments.add(lastSegment);
+			}
+		}
+		synchronized (lastSegment.trackpoints)
+		{
+			if (maxPoints > 0 && lastSegment.trackpoints.size() > maxPoints)
 			{
 				// TODO add correct cleaning if preferences changed
-				TrackPoint fp = trackpoints.get(0);
-				TrackPoint sp = trackpoints.get(1);
+				TrackPoint fp = lastSegment.trackpoints.get(0);
+				TrackPoint sp = lastSegment.trackpoints.get(1);
 				distance -= Geo.distance(fp.latitude, fp.longitude, sp.latitude, sp.longitude);
-				trackpoints.remove(0);
+				lastSegment.trackpoints.remove(0);
 			}
-			trackpoints.add(lastTrackPoint);
+			lastSegment.trackpoints.add(lastTrackPoint);
+			if (lastTrackPoint.latitude < lastSegment.bounds.minLat)
+				lastSegment.bounds.minLat = lastTrackPoint.latitude;
+			if (lastTrackPoint.latitude > lastSegment.bounds.maxLat)
+				lastSegment.bounds.maxLat = lastTrackPoint.latitude;
+			// FIXME think how to wrap 180 parallel
+			if (lastTrackPoint.longitude < lastSegment.bounds.minLon)
+				lastSegment.bounds.minLon = lastTrackPoint.longitude;
+			if (lastTrackPoint.longitude > lastSegment.bounds.maxLon)
+				lastSegment.bounds.maxLon = lastTrackPoint.longitude;
 		}
 	}
 
 	public void clear()
 	{
-		synchronized (trackpoints)
+		synchronized (segments)
 		{
-			trackpoints.clear();
+			segments.clear();
+			lastSegment = new TrackSegment();
+			segments.add(lastSegment);
 		}
 		lastTrackPoint = null;
 		distance = 0;
@@ -140,14 +201,23 @@ public class Track
 
 	public TrackPoint getPoint(int location) throws IndexOutOfBoundsException
 	{
-		return trackpoints.get(location);
+		int i = 0;
+		for (TrackSegment segment : segments)
+		{
+			int s = segment.trackpoints.size();
+			if (i + s > location)
+				return segment.trackpoints.get(location - i);
+			else
+				i += s;
+		}
+		throw new IndexOutOfBoundsException();
 	}
 
 	public TrackPoint getLastPoint()
 	{
 		return lastTrackPoint;
 	}
-	
+	/*
 	public void removePoint(int location) throws IndexOutOfBoundsException
 	{
 		synchronized (trackpoints)
@@ -191,5 +261,5 @@ public class Track
 			trackpoints.addAll(tps);
 		}
 	}
-
+*/
 }

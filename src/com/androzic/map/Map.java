@@ -37,6 +37,7 @@ import android.graphics.Rect;
 import android.view.View;
 
 import com.androzic.Log;
+import com.androzic.data.Bounds;
 import com.jhlabs.Point2D;
 import com.jhlabs.map.proj.Projection;
 import com.jhlabs.map.proj.ProjectionException;
@@ -803,30 +804,6 @@ public class Map implements Serializable
 		double[] Klon = new double[3];
 	}
 
-	public static class Bounds
-	{
-    	public double minLat = Double.MAX_VALUE;
-    	public double maxLat = Double.MIN_VALUE;
-    	public double minLon = Double.MAX_VALUE;
-    	public double maxLon = Double.MIN_VALUE;
-
-    	public boolean intersects(Bounds area)
-    	{
-            return intersects(this, area);
-    	}
-
-    	public static boolean intersects(Bounds a, Bounds b)
-    	{
-    		//FIXME Should wrap 180 parallel
-    		return a.minLon < b.maxLon && b.minLon < a.maxLon
-                    && a.minLat < b.maxLat && b.minLat < a.maxLat;
-    	}
-    	
-    	public String toString()
-    	{
-    		return "[" + maxLat + "," + minLon + "," + minLat + "," + maxLon + "]";
-    	}
-	}
 	
 	public void debug()
 	{

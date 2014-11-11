@@ -29,6 +29,7 @@ import android.graphics.Canvas;
 import android.view.View;
 
 import com.androzic.Log;
+import com.androzic.data.Bounds;
 import com.androzic.map.Map;
 import com.androzic.map.Tile;
 import com.androzic.map.TileRAMCache;
