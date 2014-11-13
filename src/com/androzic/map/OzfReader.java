@@ -23,9 +23,9 @@ package com.androzic.map;
 import java.io.File;
 import java.io.IOException;
 
-import com.androzic.Log;
-
 import android.graphics.Bitmap;
+
+import com.androzic.Log;
 
 public class OzfReader
 {
@@ -211,7 +211,7 @@ public class OzfReader
 		{
 	        int w = OzfDecoder.OZF_TILE_WIDTH;
 	        int h = OzfDecoder.OZF_TILE_HEIGHT;
-			if (factor < 1.0)
+	        if (OzfDecoder.useNativeCalls && factor < 1.0)
 			{
 		        w = (int) (factor * w);
 		        h = (int) (factor * h);
@@ -222,14 +222,15 @@ public class OzfReader
 				tileBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565);
 				tileBitmap.setPixels(data, 0, w, 0, 0, w, h);
 			}
-			if (tileBitmap != null && factor > 1.0)
+			if (tileBitmap == null)
+				return null;
+			if (factor > 1.0 || (!OzfDecoder.useNativeCalls && factor < 1.0))
 			{
 		        int sw = (int) (factor * OzfDecoder.OZF_TILE_WIDTH);
 		        int sh = (int) (factor * OzfDecoder.OZF_TILE_HEIGHT);
-		        Bitmap scaled = Bitmap.createScaledBitmap(tileBitmap, sw, sh, true);
+		        Bitmap scaled = Bitmap.createScaledBitmap(tileBitmap, sw, sh, false);
 		        tileBitmap = scaled;
 			}
-		
 			if (cache != null && tileBitmap != null)
 			{
 				tile.bitmap = tileBitmap;
