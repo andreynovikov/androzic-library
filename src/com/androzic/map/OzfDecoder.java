@@ -61,7 +61,7 @@ public class OzfDecoder
 	private static ZStream zip = new ZStream();
 	private static int[] pixels = new int[OZF_TILE_WIDTH * OZF_TILE_HEIGHT];
 
-	public static boolean useNativeCalls = true;
+	public static boolean useNativeCalls = false;
 
 	public final static byte readByte(RandomAccessFile reader) throws IOException
 	{
@@ -134,7 +134,7 @@ public class OzfDecoder
 		{
 			return getTileNative(file.fileptr, file.type, file.key, file.images[scale].encryption_depth, file.scales_table[scale], i, w, h, file.images[scale].palette);
 		}
-		
+
 		int tilesize;
 		byte[] tile;
 		
@@ -629,7 +629,12 @@ public class OzfDecoder
 	private synchronized static native void closeImageNative(long ptr);
 	private synchronized static native int[] getTileNative(long ptr, int type, int key, int depth, int offset, int i, int w, int h, byte[] palette);	
 
-    static {
+	/**
+	 * Enable native calls. Should be used before any manipulation with OZF files.
+	 */
+	public static void useNativeCalls() throws UnsatisfiedLinkError
+	{
         System.loadLibrary("ozfdecoder");
-    }
+        useNativeCalls = true;
+	}
 }
