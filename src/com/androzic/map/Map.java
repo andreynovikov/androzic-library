@@ -183,13 +183,7 @@ public class Map implements Serializable
 		{
 			bounds = new Bounds();
 			for (MapPoint corner : cornerMarkers)
-			{
-				if (corner.lat < bounds.minLat) bounds.minLat = corner.lat;
-				if (corner.lat > bounds.maxLat) bounds.maxLat = corner.lat;
-				// FIXME think how to wrap 180 parallel
-				if (corner.lon < bounds.minLon) bounds.minLon = corner.lon;
-				if (corner.lon > bounds.maxLon) bounds.maxLon = corner.lon;
-			}
+				bounds.extend(corner.lat, corner.lon);
 		}
 		return bounds;
 	}

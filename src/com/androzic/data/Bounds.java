@@ -27,6 +27,31 @@ public class Bounds
 	public double minLon = Double.MAX_VALUE;
 	public double maxLon = Double.MIN_VALUE;
 
+	public Bounds()
+	{
+	}
+	
+	public Bounds(Bounds bounds)
+	{
+		minLat = bounds.minLat;
+		maxLat = bounds.maxLat;
+		minLon = bounds.minLon;
+		maxLon = bounds.maxLon;
+	}
+
+	public void extend(double latitude, double longitude)
+	{
+		if (latitude < minLat)
+			minLat = latitude;
+		if (latitude > maxLat)
+			maxLat = latitude;
+		// FIXME think how to wrap 180 parallel
+		if (longitude < minLon)
+			minLon = longitude;
+		if (longitude > maxLon)
+			maxLon = longitude;
+	}
+
 	public boolean intersects(Bounds area)
 	{
         return intersects(this, area);

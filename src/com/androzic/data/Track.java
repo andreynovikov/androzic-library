@@ -89,7 +89,7 @@ public class Track
 	public class TrackSegment
 	{
 		public boolean independent;
-		private final Bounds bounds = new Bounds();
+		public final Bounds bounds = new Bounds();
 		private final List<TrackPoint> trackpoints = new ArrayList<TrackPoint>(0);
 		
 		public TrackSegment()
@@ -175,15 +175,7 @@ public class Track
 				lastSegment.trackpoints.remove(0);
 			}
 			lastSegment.trackpoints.add(lastTrackPoint);
-			if (lastTrackPoint.latitude < lastSegment.bounds.minLat)
-				lastSegment.bounds.minLat = lastTrackPoint.latitude;
-			if (lastTrackPoint.latitude > lastSegment.bounds.maxLat)
-				lastSegment.bounds.maxLat = lastTrackPoint.latitude;
-			// FIXME think how to wrap 180 parallel
-			if (lastTrackPoint.longitude < lastSegment.bounds.minLon)
-				lastSegment.bounds.minLon = lastTrackPoint.longitude;
-			if (lastTrackPoint.longitude > lastSegment.bounds.maxLon)
-				lastSegment.bounds.maxLon = lastTrackPoint.longitude;
+			lastSegment.bounds.extend(lastTrackPoint.latitude, lastTrackPoint.longitude);
 		}
 	}
 
