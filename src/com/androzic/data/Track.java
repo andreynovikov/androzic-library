@@ -21,6 +21,7 @@
 package com.androzic.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.androzic.util.Geo;
@@ -42,7 +43,7 @@ public class Track
 	public boolean editing = false;
 	public int editingPos = -1;
 
-	private final List<TrackSegment> segments = new ArrayList<TrackSegment>(1);
+	private final List<TrackSegment> segments = Collections.synchronizedList(new ArrayList<TrackSegment>(1));
 	private TrackSegment lastSegment;
 	private TrackPoint lastTrackPoint;
 
@@ -90,7 +91,7 @@ public class Track
 	{
 		public boolean independent;
 		public final Bounds bounds = new Bounds();
-		private final List<TrackPoint> trackpoints = new ArrayList<TrackPoint>(0);
+		private final List<TrackPoint> trackpoints = Collections.synchronizedList(new ArrayList<TrackPoint>(0));
 		
 		public TrackSegment()
 		{
