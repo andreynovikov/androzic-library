@@ -38,7 +38,7 @@ import com.jhlabs.map.proj.ProjectionFactory;
 
 public class OnlineMap extends Map
 {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
 	public static final int TILE_WIDTH = 256;
 	public static final int TILE_HEIGHT = 256;
@@ -51,7 +51,7 @@ public class OnlineMap extends Map
 	
 	public OnlineMap(TileProvider provider, byte z)
 	{
-		super("http://...");
+		super("http://... [" + provider.code + "]");
 		datum = "WGS84";
 		projection = ProjectionFactory.fromPROJ4Specification("+proj=merc".split(" "));
 		projection.setEllipsoid(Ellipsoid.WGS_1984);
