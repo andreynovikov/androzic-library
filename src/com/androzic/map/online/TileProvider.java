@@ -36,6 +36,7 @@ public class TileProvider
 	public byte maxZoom;
 	public boolean inverseY = false;
 	public boolean ellipsoid = false;
+	public OnlineMap instance = null;
 	public int tileSize = 25000;
 	private int nextServer = 0;
 	//TODO Better initialization?
