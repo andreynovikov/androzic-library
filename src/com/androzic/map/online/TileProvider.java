@@ -23,6 +23,7 @@ package com.androzic.map.online;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import com.androzic.map.OnMapTileStateChangeListener;
 import com.androzic.util.CSV;
 
 public class TileProvider
@@ -37,6 +38,7 @@ public class TileProvider
 	public boolean inverseY = false;
 	public boolean ellipsoid = false;
 	public OnlineMap instance = null;
+	public OnMapTileStateChangeListener listener = null;
 	public int tileSize = 25000;
 	private int nextServer = 0;
 	//TODO Better initialization?

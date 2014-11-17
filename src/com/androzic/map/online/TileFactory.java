@@ -134,6 +134,8 @@ public class TileFactory
 				break;
 			}
 		}
+		if (provider.listener != null)
+			provider.listener.onTileObtained();
 	}
 
 	public static void saveTile(TileProvider provider, byte[] dat, int tx, int ty, byte z)
@@ -155,6 +157,8 @@ public class TileFactory
 				fileOutputStream.write(dat);
 				fileOutputStream.flush();
 				fileOutputStream.close();
+				if (provider.listener != null)
+					provider.listener.onTileObtained();
 			}
 			catch (IOException e)
 			{
