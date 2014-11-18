@@ -890,4 +890,10 @@ public class Map implements Serializable
 		
 		return info;
 	}
+	
+	@Override
+	public int hashCode()
+	{
+		return id;
+	}
 }
