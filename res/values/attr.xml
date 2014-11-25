@@ -14,4 +14,17 @@
     <declare-styleable name="FolderPickerPreference">
         <attr name="defaultFolder" format="string" />
     </declare-styleable>
+    <!-- Default style attribute which will be used during construction of FloatingActionButton. -->
+    <attr name="floatingActionButtonStyle" format="reference"/>
+    <declare-styleable name="FloatingActionButton">
+        <!-- Background color -->
+        <attr name="floatingActionButtonColor" format="color|reference"/>
+        <!-- Size of action button -->
+        <attr name="floatingActionButtonSize" format="enum">
+            <!-- 56dp -->
+            <enum name="normal" value="0"/>
+            <!-- 40dp -->
+            <enum name="mini" value="1"/>
+        </attr>
+    </declare-styleable>
 </resources>
