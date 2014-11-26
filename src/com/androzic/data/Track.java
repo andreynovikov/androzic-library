@@ -23,6 +23,7 @@ package com.androzic.data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 
 import com.androzic.util.Geo;
 
@@ -129,6 +130,14 @@ public class Track
 		return segments;
 	}
 
+	public int getPointCount()
+	{
+		int count = 0;
+		for (TrackSegment segment : segments)
+			count += segment.trackpoints.size();
+		return count;
+	}
+
 	public List<TrackPoint> getPoints(Bounds area)
 	{
 		List<TrackPoint> trackpoints = new ArrayList<TrackPoint>(0);		
@@ -165,19 +174,19 @@ public class Track
 				segments.add(lastSegment);
 			}
 		}
-		synchronized (lastSegment.trackpoints)
+		if (maxPoints > 0 && lastSegment.trackpoints.size() > maxPoints)
 		{
-			if (maxPoints > 0 && lastSegment.trackpoints.size() > maxPoints)
-			{
-				// TODO add correct cleaning if preferences changed
-				TrackPoint fp = lastSegment.trackpoints.get(0);
-				TrackPoint sp = lastSegment.trackpoints.get(1);
-				distance -= Geo.distance(fp.latitude, fp.longitude, sp.latitude, sp.longitude);
-				lastSegment.trackpoints.remove(0);
-			}
-			lastSegment.trackpoints.add(lastTrackPoint);
-			lastSegment.bounds.extend(lastTrackPoint.latitude, lastTrackPoint.longitude);
+			// TODO add correct cleaning if preferences changed
+			TrackPoint fp = lastSegment.trackpoints.get(0);
+			TrackPoint sp = lastSegment.trackpoints.get(1);
+			distance -= Geo.distance(fp.latitude, fp.longitude, sp.latitude, sp.longitude);
+			ListIterator<TrackPoint> points = lastSegment.trackpoints.listIterator();
+			points.next();
+			points.remove();
 		}
+		ListIterator<TrackPoint> points = lastSegment.trackpoints.listIterator(lastSegment.trackpoints.size());
+		points.add(lastTrackPoint);
+		lastSegment.bounds.extend(lastTrackPoint.latitude, lastTrackPoint.longitude);
 	}
 
 	public void clear()
