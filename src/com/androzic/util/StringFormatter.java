@@ -38,11 +38,21 @@ public class StringFormatter
 	
 	final static DecimalFormat timeFormat = new DecimalFormat("00");
 
+	public static int coordinateFormat = 0;
+	
 	public static double distanceFactor = 1.0;
 	public static String distanceAbbr = "km";
 	public static double distanceShortFactor = 1.0;
 	public static String distanceShortAbbr = "m";
 	
+	public static String precisionFormat = "%.0f";
+	public static double speedFactor;
+	public static String speedAbbr;
+
+	public static String elevationFormat = "%.0f";
+	public static double elevationFactor;
+	public static String elevationAbbr;
+
 	//FIXME Should localize:
 	public static String secondAbbr = "sec";
 	public static String minuteAbbr = "min";
@@ -98,6 +108,31 @@ public class StringFormatter
 		return new String[] {String.format(format, dist), distunit};
 	}
 
+	public static final String speedH(final double speed)
+	{
+		return speedC(speed) + " " + speedAbbr;
+	}
+
+	public static final String speedC(final double speed)
+	{
+		return String.format(precisionFormat, speed * speedFactor);
+	}
+
+	public static final String elevationH(final double elevation)
+	{
+		return elevationC(elevation) + " " + elevationAbbr;
+	}
+
+	public static final String elevationC(final double elevation)
+	{
+		return String.format(elevationFormat, elevation * elevationFactor);
+	}
+
+	public static final String coordinate(double coordinate)
+	{
+		return coordinate(coordinateFormat, coordinate);
+	}
+
 	public static final String coordinate(int format, double coordinate)
 	{
 		switch (format)
@@ -129,6 +164,18 @@ public class StringFormatter
 			}
 		}
 		return String.valueOf(coordinate);
+	}
+
+	/**
+	 * Formats coordinates according to currently selected format as one string with specified delimeter between coordinates (if applicable).
+	 * @param delimeter Delimeter between latitude and longitude
+	 * @param latitude Latitude
+	 * @param longitude Longitude
+	 * @return
+	 */
+	public static final String coordinates(String delimeter, double latitude, double longitude)
+	{
+		return coordinates(coordinateFormat, delimeter, latitude, longitude);
 	}
 
 	public static final String coordinates(int format, String delimeter, double latitude, double longitude)
@@ -176,18 +223,6 @@ public class StringFormatter
 		return ".";
 	}
 	
-	public static final String timeH(int minutes)
-	{
-		String[] time = timeC(minutes);
-		return time[0] + " " + time[1];
-	}
-
-	public static final String timeHP(int seconds, int timeout)
-	{
-		String[] time = timeCP(seconds, timeout);
-		return time[0] + " " + time[1];
-	}
-
 	/**
 	 * Formats time period in four ways:<br/>
 	 * "< 1 min" - for 1 minute<br/>
