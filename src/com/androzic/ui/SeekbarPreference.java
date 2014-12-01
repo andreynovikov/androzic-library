@@ -11,6 +11,7 @@ import java.text.DecimalFormat;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.Build;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -69,6 +70,7 @@ public class SeekbarPreference extends DialogPreference implements SeekBar.OnSee
 		String fmt = sattrs.getString(R.styleable.SeekbarPreference_format);
 		if (fmt == null)
 			fmt = "0";
+		sattrs.recycle();
 		format = new DecimalFormat(fmt);
 	}
 
@@ -85,7 +87,9 @@ public class SeekbarPreference extends DialogPreference implements SeekBar.OnSee
 		LinearLayout.LayoutParams params;
 		LinearLayout layout = new LinearLayout(mContext);
 		layout.setOrientation(LinearLayout.VERTICAL);
-		layout.setPadding(6, 6, 6, 6);
+		int padding = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? 16 : 6;
+		padding *= (mContext.getResources().getDisplayMetrics().density + 0.5);
+		layout.setPadding(padding, padding, padding, padding);
 
 		if (mDialogMessage != null) {
 			mSplashText = new TextView(mContext);
@@ -145,7 +149,7 @@ public class SeekbarPreference extends DialogPreference implements SeekBar.OnSee
 	{
 		if (positiveResult)
 		{
-			if (callChangeListener(new Integer(mValue)) && shouldPersist())
+			if (callChangeListener(Integer.valueOf(mValue)) && shouldPersist())
 				persistInt(mValue);
 		}
 	}
