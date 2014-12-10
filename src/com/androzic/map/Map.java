@@ -138,6 +138,7 @@ public class Map implements Serializable
         borderPaint.setStyle(Style.STROKE);
 	}
 	
+	//TODO Extract this to base map class
 	synchronized public void deactivate()
 	{
 		//TODO This shouldn't happen but happens

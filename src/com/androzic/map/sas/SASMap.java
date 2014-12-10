@@ -120,7 +120,8 @@ public class SASMap extends Map
 	public void deactivate()
 	{
 		isActive = false;
-		cache.destroy();
+		if (cache != null)
+			cache.destroy();
 		if (savedZoom != 0)
 			zoom = savedZoom;
 		savedZoom = 0;
