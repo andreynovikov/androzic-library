@@ -30,7 +30,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
-import android.view.View;
 
 import com.androzic.Log;
 import com.androzic.map.Map;
@@ -99,7 +98,7 @@ public class SASMap extends Map
 	}
 
 	@Override
-	public void activate(View view, int pixels) throws IOException, OutOfMemoryError
+	public void activate(int pixels) throws IOException, OutOfMemoryError
 	{
 		this.pixels = pixels;
 		mapClipPath = new Path();

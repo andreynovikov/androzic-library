@@ -63,6 +63,8 @@ public class TileFactory
 		{
 			t.bitmap = bitmap;
 			t.generated = false;
+			if (provider.listener != null)
+				provider.listener.onTileObtained();
 		}
 	}
 
@@ -130,12 +132,12 @@ public class TileFactory
 				// Create tile bitmap from mini bitmap
 				t.bitmap = Bitmap.createBitmap(miniTileBitmap, 0, 0, miniTileWidth, miniTileHeight, matrix, false);
 				t.generated = true;
+				if (provider.listener != null)
+					provider.listener.onTileObtained();
 				miniTileBitmap.recycle();
 				break;
 			}
 		}
-		if (provider.listener != null)
-			provider.listener.onTileObtained();
 	}
 
 	public static void saveTile(TileProvider provider, byte[] dat, int tx, int ty, byte z)
@@ -157,8 +159,6 @@ public class TileFactory
 				fileOutputStream.write(dat);
 				fileOutputStream.flush();
 				fileOutputStream.close();
-				if (provider.listener != null)
-					provider.listener.onTileObtained();
 			}
 			catch (IOException e)
 			{

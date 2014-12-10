@@ -34,7 +34,6 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
 import android.graphics.Rect;
-import android.view.View;
 
 import com.androzic.Log;
 import com.androzic.data.Bounds;
@@ -108,7 +107,7 @@ public class Map implements Serializable
 		cache = null;
 	}
 	
-	public void activate(View view, int pixels) throws IOException, OutOfMemoryError
+	public void activate(int pixels) throws IOException, OutOfMemoryError
 	{
 		this.pixels = pixels;
 		Log.d("OZI", "Image file specified: " + imagePath);
@@ -411,7 +410,7 @@ public class Map implements Serializable
 		zoom = ozf.setZoom(z);
 		if (cache != null)
 			cache.destroy();
-		int cacheSize = (int) Math.ceil(pixels * 1. / (ozf.tile_dx() * ozf.tile_dy()) * 3);
+		int cacheSize = (int) Math.ceil(pixels * 1. / (ozf.tile_dx() * ozf.tile_dy()) * 2);
 		Log.e("OZI", "Cache size: " + cacheSize);
 		cache = new TileRAMCache(cacheSize);
 		ozf.setCache(cache);

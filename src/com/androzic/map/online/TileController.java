@@ -23,8 +23,6 @@ package com.androzic.map.online;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
-import android.view.View;
-
 import com.androzic.map.Tile;
 import com.androzic.map.TileRAMCache;
 
@@ -36,7 +34,6 @@ public class TileController extends Thread
 	Thread mThreadb;
 	Thread mThreadc;
 	Thread mThreadd;
-	private View view;
 	private TileProvider provider;
 	private TileRAMCache cache;
 
@@ -53,13 +50,6 @@ public class TileController extends Thread
 		mThreadd = new Thread(this);
 		mThreadd.start();
 	}
-
-	final Runnable update = new Runnable() {
-		public void run()
-		{
-			view.postInvalidate();
-		}
-	};
 
 	public void run()
 	{
@@ -86,8 +76,6 @@ public class TileController extends Thread
 				{
 					TileFactory.saveTile(provider, t);
 					cache.put(t);
-					if (view.getHandler() != null)
-						view.getHandler().post(update);
 				}
 			}
 			catch (Exception e)
@@ -168,11 +156,6 @@ public class TileController extends Thread
 	{
 		tileMap = new Hashtable<Long, Tile>();
 		pendingList = new LinkedList<Tile>();
-	}
-
-	public void setView(View view)
-	{
-		this.view = view;
 	}
 
 	public void setCache(TileRAMCache cache)
