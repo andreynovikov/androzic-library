@@ -73,7 +73,7 @@ public class Map implements Serializable
 	public String origDatum;
 	public int width;
 	public int height;
-	public double mpp;
+	protected double mpp;
 	public double scaleFactor;
 	public String prjName;
 	public Grid llGrid;
@@ -358,6 +358,16 @@ public class Map implements Serializable
 		return b.intersects(area);
 	}
 	
+	public double getMPP()
+	{
+		return mpp / getZoom();
+	}
+
+	public double getAbsoluteMPP()
+	{
+		return mpp;
+	}
+
 	public double getNextZoom()
 	{
 		double zoomCurrent = getZoom();
