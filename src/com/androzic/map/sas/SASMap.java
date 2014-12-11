@@ -323,6 +323,16 @@ public class SASMap extends Map
 	}
 
 	@Override
+	public void recalculateCache()
+	{
+		if (cache != null)
+			cache.destroy();
+		int cacheSize = (int) (pixels * 1. / (TILE_WIDTH * dynZoom * TILE_HEIGHT * dynZoom) * 3);
+		Log.e("SAS", "Cache size: " + cacheSize);
+		cache = new TileRAMCache(cacheSize);
+	}
+
+	@Override
 	public double getNextZoom()
 	{
 		int z = defZoom + (int) (Math.log(zoom) / Math.log(2));
@@ -377,11 +387,7 @@ public class SASMap extends Map
 			dynZoom = 1.0;
 		Log.e("SAS", "z: " + srcZoom + " diff: " + zDiff + " zoom: " + zoom + " dymZoom: " + dynZoom);
 
-		if (cache != null)
-			cache.destroy();
-		int cacheSize = (int) (pixels * 1. / (TILE_WIDTH * dynZoom * TILE_HEIGHT * dynZoom) * 3);
-		Log.e("SAS", "Cache size: " + cacheSize);
-		cache = new TileRAMCache(cacheSize);
+		recalculateCache();
 
 	    title = String.format("%s (%d)", name, srcZoom);
 	    

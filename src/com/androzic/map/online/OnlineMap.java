@@ -39,6 +39,8 @@ public class OnlineMap extends Map
 {
 	private static final long serialVersionUID = 2L;
 	
+	private static final int ORIG_TILE_WIDTH = 256;
+	private static final int ORIG_TILE_HEIGHT = 256;
 	public static int TILE_WIDTH = 256;
 	public static int TILE_HEIGHT = 256;
 	
@@ -86,8 +88,8 @@ public class OnlineMap extends Map
 
 	public static void setPrescaleFactor(int factor)
 	{
-		TILE_WIDTH = TILE_WIDTH * factor;
-		TILE_HEIGHT = TILE_HEIGHT * factor;
+		TILE_WIDTH = ORIG_TILE_WIDTH * factor;
+		TILE_HEIGHT = ORIG_TILE_HEIGHT * factor;
 		prescaleFactor = 1. / factor;
 	}
 
@@ -96,10 +98,8 @@ public class OnlineMap extends Map
 	{
 		setZoom(savedZoom == 0 ? zoom : savedZoom);
 		savedZoom = 0;
-		int cacheSize = (int) Math.ceil(pixels * 1. / (TILE_WIDTH * TILE_HEIGHT) * 3);
-		cache = new TileRAMCache(cacheSize);
-		tileController.setCache(cache);
 		tileController.setProvider(tileProvider);
+		recalculateCache();
 		isActive = true;
 	}
 	
@@ -339,6 +339,19 @@ public class OnlineMap extends Map
 			return 0.0;
 		Log.e("ONLINE", "Next zoom: " + Math.pow(2, this.srcZoom + 1 - defZoom));
 		return Math.pow(2, this.srcZoom + 1 - defZoom);
+	}
+
+	@Override
+	public void recalculateCache()
+	{
+		TileRAMCache oldcache = cache;
+		int cacheSize = (int) Math.ceil(pixels * 1. / (TILE_WIDTH * TILE_HEIGHT) * 3);
+		cache = new TileRAMCache(cacheSize);
+		tileController.setCache(cache);
+		if (oldcache != null)
+		{
+			oldcache.destroy();
+		}
 	}
 
 	@Override

@@ -368,6 +368,16 @@ public class Map implements Serializable
 		return mpp;
 	}
 
+	public void recalculateCache()
+	{
+		if (cache != null)
+			cache.destroy();
+		int cacheSize = (int) Math.ceil(pixels * 1. / (ozf.tile_dx() * ozf.tile_dy()) * 2);
+		Log.e("OZI", "Cache size: " + cacheSize);
+		cache = new TileRAMCache(cacheSize);
+		ozf.setCache(cache);
+	}
+
 	public double getNextZoom()
 	{
 		double zoomCurrent = getZoom();
@@ -418,12 +428,7 @@ public class Map implements Serializable
 	{
 		Log.e("OZI", "setZoom: " + z);
 		zoom = ozf.setZoom(z);
-		if (cache != null)
-			cache.destroy();
-		int cacheSize = (int) Math.ceil(pixels * 1. / (ozf.tile_dx() * ozf.tile_dy()) * 2);
-		Log.e("OZI", "Cache size: " + cacheSize);
-		cache = new TileRAMCache(cacheSize);
-		ozf.setCache(cache);
+		recalculateCache();
 		bind();
 		mapClipPath.rewind();
 		mapClipPath.setLastPoint((float) (cornerMarkers[0].x * zoom), (float) (cornerMarkers[0].y * zoom));
