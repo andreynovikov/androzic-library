@@ -26,7 +26,6 @@ import java.util.List;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.view.View;
 
 import com.androzic.Log;
 import com.androzic.data.Bounds;
@@ -40,8 +39,10 @@ public class OnlineMap extends Map
 {
 	private static final long serialVersionUID = 2L;
 	
-	public static final int TILE_WIDTH = 256;
-	public static final int TILE_HEIGHT = 256;
+	public static int TILE_WIDTH = 256;
+	public static int TILE_HEIGHT = 256;
+	
+	private static double prescaleFactor = 1.;
 	
 	private TileController tileController;
 	private TileProvider tileProvider;
@@ -80,17 +81,23 @@ public class OnlineMap extends Map
 	     * ellipsoidal, there will be a slight error in this calculation. But it's very slight.
 	     * (0.3% maximum error) 
 	     */
-		mpp = projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(0) / Math.pow(2.0, (srcZoom + 8));
+		mpp = prescaleFactor * projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(0) / Math.pow(2.0, (srcZoom + 8));
+	}
+
+	public static void setPrescaleFactor(int factor)
+	{
+		TILE_WIDTH = TILE_WIDTH * factor;
+		TILE_HEIGHT = TILE_HEIGHT * factor;
+		prescaleFactor = 1. / factor;
 	}
 
 	@Override
-	public void activate(View view, int pixels) throws IOException, OutOfMemoryError
+	public void activate(int pixels) throws IOException, OutOfMemoryError
 	{
 		setZoom(savedZoom == 0 ? zoom : savedZoom);
 		savedZoom = 0;
-		int cacheSize = (int) (pixels / (TILE_WIDTH * TILE_HEIGHT) * 4);
+		int cacheSize = (int) Math.ceil(pixels * 1. / (TILE_WIDTH * TILE_HEIGHT) * 3);
 		cache = new TileRAMCache(cacheSize);
-		tileController.setView(view);
 		tileController.setCache(cache);
 		tileController.setProvider(tileProvider);
 		isActive = true;
@@ -124,7 +131,7 @@ public class OnlineMap extends Map
 	public boolean coversLatLon(double lat, double lon)
 	{
 		if (! isActive)
-			mpp = projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(Math.toRadians(lat)) / Math.pow(2.0, (srcZoom + 8));
+			mpp = prescaleFactor * projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(Math.toRadians(lat)) / Math.pow(2.0, (srcZoom + 8));
 		return lat < 85.051129 && lat > -85.047336;
 	}
 
@@ -197,11 +204,16 @@ public class OnlineMap extends Map
 			{
 				int tx = txb + (j - c_min) * TILE_WIDTH;
 				int ty = tyb + (i - r_min) * TILE_HEIGHT;
-			
+
 				Bitmap tile = getTile(j, i);
 
 				if (tile != null && ! tile.isRecycled())
 				{
+					if (tile.getWidth() != TILE_WIDTH)
+					{
+						Bitmap scaled = Bitmap.createScaledBitmap(tile, TILE_WIDTH, TILE_HEIGHT, true);
+						tile = scaled;
+					}
 					c.drawBitmap(tile, tx, ty, null);
 				}
 			}
@@ -315,6 +327,12 @@ public class OnlineMap extends Map
 	}
 	
 	@Override
+	public double getMPP()
+	{
+		return mpp;
+	}
+
+	@Override
 	public double getNextZoom()
 	{
 		if (srcZoom >= tileProvider.maxZoom)
@@ -365,6 +383,8 @@ public class OnlineMap extends Map
 //		zoom = Math.pow(2, this.srcZoom - defZoom);
 		tileController.reset();
 	    title = String.format("%s (%d)", tileProvider.name, srcZoom);
+	    
+		mpp = prescaleFactor * projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(0) / Math.pow(2.0, (srcZoom + 8));
 	}
 
 	public int getScaledWidth()

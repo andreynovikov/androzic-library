@@ -33,7 +33,7 @@ public class TileRAMCache
 	/**
 	 * Load factor of the internal HashMap.
 	 */
-	private static final float LOAD_FACTOR = 1.1f;
+	private static final float LOAD_FACTOR = .75f;
 
 	private final int capacity;
 	private LinkedHashMap<Long, Tile> map;
@@ -58,9 +58,10 @@ public class TileRAMCache
 
 	private LinkedHashMap<Long, Tile> createMap(final int initialCapacity)
 	{
-		return new LinkedHashMap<Long, Tile>(initialCapacity + 1, LOAD_FACTOR, true) {
-			private static final long serialVersionUID = 3L;
+		return new LinkedHashMap<Long, Tile>((int)(initialCapacity * 1. / LOAD_FACTOR + 2), LOAD_FACTOR, true) {
+			private static final long serialVersionUID = 4L;
 
+			/*
 			@Override
 			public Tile remove(Object key) {
 				Tile tile = super.remove(key);
@@ -69,6 +70,7 @@ public class TileRAMCache
 				tile.bitmap = null;
 				return tile;
 			}
+			 */
 
 			@Override
 			protected boolean removeEldestEntry(Map.Entry<Long, Tile> eldest)
@@ -100,12 +102,14 @@ public class TileRAMCache
 	{
 		if (map != null)
 		{
+			/*
 			for (Tile tile : map.values())
 			{
 				if (tile.bitmap != null)
 					tile.bitmap.recycle();
 				tile.bitmap = null;
 			}
+			*/
 			map.clear();
 		}
 	}
