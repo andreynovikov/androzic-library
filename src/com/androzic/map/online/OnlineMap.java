@@ -26,6 +26,7 @@ import java.util.List;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.util.DisplayMetrics;
 
 import com.androzic.Log;
 import com.androzic.data.Bounds;
@@ -94,8 +95,11 @@ public class OnlineMap extends Map
 	}
 
 	@Override
-	public void activate(int pixels) throws IOException, OutOfMemoryError
+	public void activate(DisplayMetrics metrics) throws IOException, OutOfMemoryError
 	{
+		displayWidth = metrics.widthPixels;
+		displayHeight = metrics.heightPixels;
+
 		setZoom(savedZoom == 0 ? zoom : savedZoom);
 		savedZoom = 0;
 		tileController.setProvider(tileProvider);
@@ -345,7 +349,10 @@ public class OnlineMap extends Map
 	public void recalculateCache()
 	{
 		TileRAMCache oldcache = cache;
-		int cacheSize = (int) Math.ceil(pixels * 1. / (TILE_WIDTH * TILE_HEIGHT) * 3);
+		int nx = (int) Math.ceil(displayWidth * 1. / TILE_WIDTH) + 2;
+		int ny = (int) Math.ceil(displayHeight * 1. / TILE_HEIGHT) + 2;
+		int cacheSize = nx * ny;
+		Log.e("ONLINE", "Cache size: " + cacheSize);
 		cache = new TileRAMCache(cacheSize);
 		tileController.setCache(cache);
 		if (oldcache != null)

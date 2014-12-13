@@ -34,6 +34,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.util.DisplayMetrics;
 
 import com.androzic.Log;
 import com.androzic.data.Bounds;
@@ -43,7 +44,7 @@ import com.jhlabs.map.proj.ProjectionException;
 
 public class Map implements Serializable
 {
-	private static final long serialVersionUID = 6L;
+	private static final long serialVersionUID = 7L;
 
 	private static final double[] zoomLevelsSupported =
 	{
@@ -84,7 +85,8 @@ public class Map implements Serializable
 	protected double zoom;
 	protected double savedZoom;
 	private LinearBinding binding = new LinearBinding();
-	protected int pixels;
+	protected transient int displayWidth;
+	protected transient int displayHeight;
 	protected transient Path mapClipPath;
 	public transient Throwable loadError;
 	private transient OzfReader ozf;
@@ -107,9 +109,11 @@ public class Map implements Serializable
 		cache = null;
 	}
 	
-	public void activate(int pixels) throws IOException, OutOfMemoryError
+	public void activate(DisplayMetrics metrics) throws IOException, OutOfMemoryError
 	{
-		this.pixels = pixels;
+		displayWidth = metrics.widthPixels;
+		displayHeight = metrics.heightPixels;
+		
 		Log.d("OZI", "Image file specified: " + imagePath);
 		File image = new File(imagePath);
 		if (! image.exists())
@@ -372,7 +376,13 @@ public class Map implements Serializable
 	{
 		if (cache != null)
 			cache.destroy();
-		int cacheSize = (int) Math.ceil(pixels * 1. / (ozf.tile_dx() * ozf.tile_dy()) * 2);
+		int nx = (int) Math.ceil(displayWidth * 1. / ozf.tile_dx()) + 2;
+		int ny = (int) Math.ceil(displayHeight * 1. / ozf.tile_dy()) + 2;
+		if (nx > ozf.tiles_per_x())
+			nx = ozf.tiles_per_x();
+		if (ny > ozf.tiles_per_y())
+			ny = ozf.tiles_per_y();
+		int cacheSize = nx * ny;
 		Log.e("OZI", "Cache size: " + cacheSize);
 		cache = new TileRAMCache(cacheSize);
 		ozf.setCache(cache);
@@ -416,7 +426,10 @@ public class Map implements Serializable
 
 	synchronized public double getZoom()
 	{
-		return ozf.getZoom();
+		if (ozf != null)
+			return ozf.getZoom();
+		else
+			return 1.;
 	}
 
 	public void zoomBy(double factor)

@@ -30,6 +30,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
+import android.util.DisplayMetrics;
 
 import com.androzic.Log;
 import com.androzic.map.Map;
@@ -98,9 +99,11 @@ public class SASMap extends Map
 	}
 
 	@Override
-	public void activate(int pixels) throws IOException, OutOfMemoryError
+	public void activate(DisplayMetrics metrics) throws IOException, OutOfMemoryError
 	{
-		this.pixels = pixels;
+		displayWidth = metrics.widthPixels;
+		displayHeight = metrics.heightPixels;
+
 		mapClipPath = new Path();
 		setZoom(savedZoom == 0 ? zoom : savedZoom);
 		savedZoom = 0;
@@ -327,7 +330,9 @@ public class SASMap extends Map
 	{
 		if (cache != null)
 			cache.destroy();
-		int cacheSize = (int) (pixels * 1. / (TILE_WIDTH * dynZoom * TILE_HEIGHT * dynZoom) * 3);
+		int nx = (int) Math.ceil(displayWidth * 1. / (TILE_WIDTH * dynZoom)) + 2;
+		int ny = (int) Math.ceil(displayHeight * 1. / (TILE_HEIGHT * dynZoom)) + 2;
+		int cacheSize = nx * ny;
 		Log.e("SAS", "Cache size: " + cacheSize);
 		cache = new TileRAMCache(cacheSize);
 	}
