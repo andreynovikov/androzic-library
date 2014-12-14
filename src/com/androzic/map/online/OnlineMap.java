@@ -52,6 +52,7 @@ public class OnlineMap extends Map
 	private boolean isActive = false;
 	private byte srcZoom;
 	private byte defZoom;
+	private double dynZoom;
 	
 	public OnlineMap(TileProvider provider, byte z)
 	{
@@ -68,7 +69,9 @@ public class OnlineMap extends Map
 		srcZoom = z;
 		defZoom = z;
 		zoom = 1.0;
-	    /*
+		dynZoom = 1.0;
+
+		/*
 	     * The distance represented by one pixel (S) is given by
 	     * S=C*cos(y)/2^(z+8) 
 	     *
@@ -161,14 +164,15 @@ public class OnlineMap extends Map
 		getXYByLatLon(loc[0], loc[1], map_xy);
 		map_xy[0] -= lookAhead[0];
 		map_xy[1] -= lookAhead[1];
-		int osm_x = map_xy[0] / TILE_WIDTH;
-		int osm_y = map_xy[1] / TILE_HEIGHT;
 		
-		int x = (int) Math.round(map_xy[0] - osm_x * TILE_WIDTH);
-		int y = (int) Math.round(map_xy[1] - osm_y * TILE_HEIGHT);
+		float tile_w = (float) (TILE_WIDTH * dynZoom);
+		float tile_h = (float) (TILE_HEIGHT * dynZoom);
 
-		int tiles_per_x = Math.round(width * 1.f / TILE_WIDTH / 2 + .5f);
-		int tiles_per_y = Math.round(height * 1.f / TILE_HEIGHT / 2 + .5f);
+		int osm_x = (int) (map_xy[0] / tile_w);
+		int osm_y = (int) (map_xy[1] / tile_h);
+
+		int tiles_per_x = Math.round(width * 1.f / tile_w / 2 + .5f);
+		int tiles_per_y = Math.round(height * 1.f / tile_h / 2 + .5f);
 
 		int c_min = osm_x - tiles_per_x;
 		int c_max = osm_x + tiles_per_x + 1;
@@ -199,25 +203,26 @@ public class OnlineMap extends Map
 			result = false;
 		}
 		
-		int txb = width / 2 - x - (osm_x - c_min) * TILE_WIDTH;
-		int tyb = height / 2 - y - (osm_y - r_min) * TILE_HEIGHT;
+		float w2mx = width / 2 - map_xy[0];
+		float h2my = height / 2 - map_xy[1];
+		int tw = Math.round(tile_w);
+		int th = Math.round(tile_h);
 		
 		for (int i = r_min; i < r_max; i++)
 		{
 			for (int j = c_min; j < c_max; j++)
 			{
-				int tx = txb + (j - c_min) * TILE_WIDTH;
-				int ty = tyb + (i - r_min) * TILE_HEIGHT;
-
 				Bitmap tile = getTile(j, i);
 
 				if (tile != null && ! tile.isRecycled())
 				{
-					if (tile.getWidth() != TILE_WIDTH)
+					if (tile.getWidth() != tw)
 					{
-						Bitmap scaled = Bitmap.createScaledBitmap(tile, TILE_WIDTH, TILE_HEIGHT, true);
+						Bitmap scaled = Bitmap.createScaledBitmap(tile, tw, th, true);
 						tile = scaled;
 					}
+					float tx = w2mx + j * tile_w;
+					float ty = h2my + i * tile_h;
 					c.drawBitmap(tile, tx, ty, null);
 				}
 			}
@@ -228,6 +233,16 @@ public class OnlineMap extends Map
 	public Bitmap getTile(int x, int y) throws OutOfMemoryError
 	{
 		Tile tile = tileController.getTile(x, y, srcZoom);
+		if (tile.bitmap != null)
+		{
+			if (dynZoom != 1.0)
+			{
+		        int sw = (int) (dynZoom * TILE_WIDTH);
+		        int sh = (int) (dynZoom * TILE_HEIGHT);
+				Bitmap scaled = Bitmap.createScaledBitmap(tile.bitmap, sw, sh, true);
+				tile.bitmap = scaled;
+			}
+		}
 		return tile.bitmap;
 	}
 
@@ -259,18 +274,20 @@ public class OnlineMap extends Map
 	@Override
 	public boolean getLatLonByXY(int x, int y, double[] ll)
 	{
-		double dx = x * 1.0 / TILE_WIDTH;
-		double dy = y * 1.0 / TILE_HEIGHT;
+		int map_x = (int) (x * 1. / dynZoom);
+		int map_y = (int) (y * 1. / dynZoom);
+		double dx = map_x * 1. / TILE_WIDTH;
+		double dy = map_y * 1. / TILE_HEIGHT;
 		
 		double n = Math.pow(2.0, srcZoom);
 		if (tileProvider.ellipsoid)
 		{
-			ll[0] = (y-TILE_HEIGHT*n/2)/-(TILE_HEIGHT*n/(2*Math.PI));
+			ll[0] = (map_y-TILE_HEIGHT*n/2)/-(TILE_HEIGHT*n/(2*Math.PI));
 			ll[0] = (2*Math.atan(Math.exp(ll[0]))-Math.PI/2)*180/Math.PI;
 
 			double Zu = Math.toRadians(ll[0]);
 			double Zum1 = Zu+1;
-			double yy = (y-TILE_HEIGHT*n/2);
+			double yy = (map_y-TILE_HEIGHT*n/2);
 			int i=100000;
 			while ((Math.abs(Zum1-Zu)>0.0000001)&&(i!=0))
 			{
@@ -295,16 +312,16 @@ public class OnlineMap extends Map
 	{
 		double n = Math.pow(2.0, srcZoom);
 		
-		xy[0] = (int) Math.floor((lon + 180.0) / 360.0 * n * TILE_WIDTH);
+		xy[0] = (int) Math.floor((lon + 180.0) / 360.0 * n * TILE_WIDTH * dynZoom);
 
 		if (tileProvider.ellipsoid)
 		{
 			double z = Math.sin(Math.toRadians(lat));
-			xy[1] = (int) Math.floor((1 - (atanh(z)-0.0818197*atanh(0.0818197*z)) / Math.PI) / 2 * n * TILE_HEIGHT);
+			xy[1] = (int) Math.floor((1 - (atanh(z)-0.0818197*atanh(0.0818197*z)) / Math.PI) / 2 * n * TILE_HEIGHT * dynZoom);
 		}
 		else
 		{
-			xy[1] = (int) Math.floor((1 - (Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI)) / 2 * n * TILE_HEIGHT);
+			xy[1] = (int) Math.floor((1 - (Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI)) / 2 * n * TILE_HEIGHT * dynZoom);
 		}
 		return true;
 	}
@@ -333,7 +350,7 @@ public class OnlineMap extends Map
 	@Override
 	public double getMPP()
 	{
-		return mpp;
+		return mpp / dynZoom;
 	}
 
 	@Override
@@ -349,8 +366,8 @@ public class OnlineMap extends Map
 	public void recalculateCache()
 	{
 		TileRAMCache oldcache = cache;
-		int nx = (int) Math.ceil(displayWidth * 1. / TILE_WIDTH) + 2;
-		int ny = (int) Math.ceil(displayHeight * 1. / TILE_HEIGHT) + 2;
+		int nx = (int) Math.ceil(displayWidth * 1. / (TILE_WIDTH * dynZoom)) + 2;
+		int ny = (int) Math.ceil(displayHeight * 1. / (TILE_HEIGHT * dynZoom)) + 2;
 		int cacheSize = nx * ny;
 		Log.e("ONLINE", "Cache size: " + cacheSize);
 		cache = new TileRAMCache(cacheSize);
@@ -379,8 +396,6 @@ public class OnlineMap extends Map
 	@Override
 	public void setZoom(double z)
 	{
-//		setZoom(srcZoom + Math.log(factor)/Math.log(2));
-
 		int zDiff = (int) (Math.log(z) / Math.log(2));
 		Log.e("ONLINE", "Zoom: " + z + " diff: " + zDiff);
 
@@ -398,9 +413,13 @@ public class OnlineMap extends Map
 		}
 
 		zoom = z;
-		Log.e("ONLINE", "z: " + srcZoom + " zoom: " + zoom + " diff: " + zDiff);
+		dynZoom = zoom / Math.pow(2, srcZoom - defZoom);
+		if (Math.abs(dynZoom - 1) < 0.0078125)
+			dynZoom = 1.0;
+		Log.e("ONLINE", "z: " + srcZoom + " diff: " + zDiff + " zoom: " + zoom + " dymZoom: " + dynZoom);
 		
-//		zoom = Math.pow(2, this.srcZoom - defZoom);
+		recalculateCache();
+		
 		tileController.reset();
 	    title = String.format("%s (%d)", tileProvider.name, srcZoom);
 	    

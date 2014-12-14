@@ -147,20 +147,17 @@ public class SASMap extends Map
 		getXYByLatLon(loc[0], loc[1], map_xy);
 		map_xy[0] -= lookAhead[0];
 		map_xy[1] -= lookAhead[1];
-
+		
 		Path clipPath = new Path();
 
 		if (cropBorder || drawBorder)
 			mapClipPath.offset(-map_xy[0] + width / 2, -map_xy[1] + height / 2, clipPath);
 
-		int tile_w = (int) (TILE_WIDTH * dynZoom);
-		int tile_h = (int) (TILE_HEIGHT * dynZoom);
+		float tile_w = (float) (TILE_WIDTH * dynZoom);
+		float tile_h = (float) (TILE_HEIGHT * dynZoom);
 
-		int sas_x = map_xy[0] / tile_w;
-		int sas_y = map_xy[1] / tile_h;
-		
-		int x = (int) Math.round(map_xy[0] - sas_x * tile_w);
-		int y = (int) Math.round(map_xy[1] - sas_y * tile_h);
+		int sas_x = (int) (map_xy[0] / tile_w);
+		int sas_y = (int) (map_xy[1] / tile_h);
 
 		int tiles_per_x = Math.round(width * 1.f / tile_w / 2 + .5f);
 		int tiles_per_y = Math.round(height * 1.f / tile_h / 2 + .5f);
@@ -172,7 +169,7 @@ public class SASMap extends Map
 		int r_max = sas_y + tiles_per_y + 1;
 		
 		boolean result = true;
-		
+
 		if (c_min < 0)
 		{
 			c_min = 0;
@@ -193,21 +190,20 @@ public class SASMap extends Map
 			r_max = (int) (Math.pow(2.0, srcZoom));
 			result = false;
 		}
-		
-		int txb = width / 2 - x - (sas_x - c_min) * tile_w;
-		int tyb = height / 2 - y - (sas_y - r_min) * tile_h;
+
+		float w2mx = width / 2 - map_xy[0];
+		float h2my = height / 2 - map_xy[1];
 		
 		for (int i = r_min; i < r_max; i++)
 		{
 			for (int j = c_min; j < c_max; j++)
 			{
-				int tx = txb + (j - c_min) * tile_w;
-				int ty = tyb + (i - r_min) * tile_h;
-			
 				Bitmap tile = getTile(j, i);
 
 				if (tile != null && ! tile.isRecycled())
 				{
+					float tx = w2mx + j * tile_w;
+					float ty = h2my + i * tile_h;
 					c.drawBitmap(tile, tx, ty, null);
 				}
 				else
@@ -216,7 +212,7 @@ public class SASMap extends Map
 				}
 			}
 		}
-		
+
 		if (drawBorder && borderPaint != null)
 			c.drawPath(clipPath, borderPaint);
 
