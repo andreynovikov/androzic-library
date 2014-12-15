@@ -54,6 +54,8 @@ public class OnlineMap extends Map
 	private byte defZoom;
 	private double dynZoom;
 	
+	private double lastLatitude;
+	
 	public OnlineMap(TileProvider provider, byte z)
 	{
 		super("http://... [" + provider.code + "]");
@@ -87,7 +89,8 @@ public class OnlineMap extends Map
 	     * ellipsoidal, there will be a slight error in this calculation. But it's very slight.
 	     * (0.3% maximum error) 
 	     */
-		mpp = prescaleFactor * projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(0) / Math.pow(2.0, (srcZoom + 8));
+		lastLatitude = 0.;
+		mpp = prescaleFactor * projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(Math.toRadians(lastLatitude)) / Math.pow(2.0, (srcZoom + 8));
 	}
 
 	public static void setPrescaleFactor(int factor)
@@ -138,7 +141,10 @@ public class OnlineMap extends Map
 	public boolean coversLatLon(double lat, double lon)
 	{
 		if (! isActive)
-			mpp = prescaleFactor * projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(Math.toRadians(lat)) / Math.pow(2.0, (srcZoom + 8));
+		{
+			lastLatitude = lat;
+			mpp = prescaleFactor * projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(Math.toRadians(lastLatitude)) / Math.pow(2.0, (srcZoom + 8));
+		}
 		return lat < 85.051129 && lat > -85.047336;
 	}
 
@@ -423,7 +429,7 @@ public class OnlineMap extends Map
 		tileController.reset();
 	    title = String.format("%s (%d)", tileProvider.name, srcZoom);
 	    
-		mpp = prescaleFactor * projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(0) / Math.pow(2.0, (srcZoom + 8));
+		mpp = prescaleFactor * projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(Math.toRadians(lastLatitude)) / Math.pow(2.0, (srcZoom + 8));
 	}
 
 	public int getScaledWidth()
