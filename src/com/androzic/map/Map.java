@@ -44,7 +44,7 @@ import com.jhlabs.map.proj.ProjectionException;
 
 public class Map implements Serializable
 {
-	private static final long serialVersionUID = 7L;
+	private static final long serialVersionUID = 9L;
 
 	private static final double[] zoomLevelsSupported =
 	{
@@ -75,15 +75,15 @@ public class Map implements Serializable
 	public int width;
 	public int height;
 	protected double mpp;
-	public double scaleFactor;
+	public double scaleFactor = 1.;
 	public String prjName;
 	public Grid llGrid;
 	public Grid grGrid;
 	protected Projection projection;
 	protected MapPoint[] cornerMarkers;
 	protected ArrayList<MapPoint> calibrationPoints = new ArrayList<MapPoint>();
-	protected double zoom;
-	protected double savedZoom;
+	protected transient double zoom = 1.;
+	protected transient double savedZoom = 0.;
 	private LinearBinding binding = new LinearBinding();
 	protected transient int displayWidth;
 	protected transient int displayHeight;
@@ -102,14 +102,9 @@ public class Map implements Serializable
 	{
 		mappath = filepath;
 		id = mappath.hashCode();
-		zoom = 1.0;
-		scaleFactor = 1.0;
-		savedZoom = 0;
-		loadError = null;
-		cache = null;
 	}
 	
-	public void activate(DisplayMetrics metrics) throws IOException, OutOfMemoryError
+	public synchronized void activate(DisplayMetrics metrics, double zoom) throws IOException, OutOfMemoryError
 	{
 		displayWidth = metrics.widthPixels;
 		displayHeight = metrics.heightPixels;
@@ -130,8 +125,18 @@ public class Map implements Serializable
 		Log.d("OZI", "Image file found: " + image.getCanonicalPath());
 		ozf = new OzfReader(image);
 		mapClipPath = new Path();
-		setZoom(savedZoom == 0 ? zoom : savedZoom);
-		savedZoom = 0;
+		if (zoom != 1.)
+		{
+			if (savedZoom == 0.)
+			savedZoom = this.zoom;
+			this.zoom = zoom;
+		}
+		else if (savedZoom != 0.)
+		{
+			this.zoom = savedZoom;
+			savedZoom = 0.;
+		}
+		setZoom(this.zoom);
 
 		borderPaint = new Paint();
         borderPaint.setAntiAlias(true);
@@ -142,7 +147,7 @@ public class Map implements Serializable
 	}
 	
 	//TODO Extract this to base map class
-	synchronized public void deactivate()
+	public synchronized void deactivate()
 	{
 		//TODO This shouldn't happen but happens
 		if (ozf != null)
@@ -153,16 +158,16 @@ public class Map implements Serializable
 			cache.destroy();
 		cache = null;
 		mapClipPath = null;
-		if (savedZoom != 0)
+		if (savedZoom != 0.)
 		{
 			zoom = savedZoom;
 			bind();
 		}
-		savedZoom = 0;
+		savedZoom = 0.;
 		borderPaint = null;
 	}
 	
-	synchronized public boolean activated()
+	public synchronized boolean activated()
 	{
 		return ozf != null;
 	}
@@ -437,9 +442,9 @@ public class Map implements Serializable
 		setZoom(zoom * factor);
 	}
 	
-	synchronized public void setZoom(double z)
+	public synchronized void setZoom(double z)
 	{
-		Log.e("OZI", "setZoom: " + z);
+		Log.e("OZI", "[" + title + "] setZoom: " + z);
 		zoom = ozf.setZoom(z);
 		recalculateCache();
 		bind();
@@ -452,11 +457,12 @@ public class Map implements Serializable
 
 	public void setTemporaryZoom(double zoom)
 	{
-		savedZoom = this.zoom;
+		if (savedZoom == 0.)
+			savedZoom = this.zoom;
 		Log.e("MAP", "setTemporaryZoom: " + zoom);
 		setZoom(zoom);
 	}
-	
+
 	public int getScaledWidth()
 	{
 		return (int) (width * zoom);

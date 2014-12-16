@@ -99,14 +99,25 @@ public class SASMap extends Map
 	}
 
 	@Override
-	public void activate(DisplayMetrics metrics) throws IOException, OutOfMemoryError
+	public synchronized void activate(DisplayMetrics metrics, double zoom) throws IOException, OutOfMemoryError
 	{
 		displayWidth = metrics.widthPixels;
 		displayHeight = metrics.heightPixels;
 
 		mapClipPath = new Path();
-		setZoom(savedZoom == 0 ? zoom : savedZoom);
-		savedZoom = 0;
+
+		if (zoom != 1.)
+		{
+			if (savedZoom == 0.)
+				savedZoom = this.zoom;
+			this.zoom = zoom;
+		}
+		else if (savedZoom != 0.)
+		{
+			this.zoom = savedZoom;
+			savedZoom = 0.;
+		}
+		setZoom(this.zoom);
 
 		borderPaint = new Paint();
         borderPaint.setAntiAlias(true);
@@ -119,14 +130,14 @@ public class SASMap extends Map
 	}
 	
 	@Override
-	public void deactivate()
+	public synchronized void deactivate()
 	{
 		isActive = false;
 		if (cache != null)
 			cache.destroy();
-		if (savedZoom != 0)
+		if (savedZoom != 0.)
 			zoom = savedZoom;
-		savedZoom = 0;
+		savedZoom = 0.;
 		cache = null;
 		mapClipPath = null;
 		borderPaint = null;
@@ -364,7 +375,7 @@ public class SASMap extends Map
 	}
 
 	@Override
-	public void setZoom(double z)
+	public synchronized void setZoom(double z)
 	{
 		int zDiff = (int) (Math.log(z) / Math.log(2));
 		Log.e("SAS", "Zoom: " + z + " diff: " + zDiff);

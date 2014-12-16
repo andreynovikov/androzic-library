@@ -70,8 +70,8 @@ public class OnlineMap extends Map
 	    title = String.format("%s (%d)", tileProvider.name, z);
 		srcZoom = z;
 		defZoom = z;
-		zoom = 1.0;
-		dynZoom = 1.0;
+		zoom = 1.;
+		dynZoom = 1.;
 
 		/*
 	     * The distance represented by one pixel (S) is given by
@@ -101,29 +101,40 @@ public class OnlineMap extends Map
 	}
 
 	@Override
-	public void activate(DisplayMetrics metrics) throws IOException, OutOfMemoryError
+	public synchronized void activate(DisplayMetrics metrics, double zoom) throws IOException, OutOfMemoryError
 	{
 		displayWidth = metrics.widthPixels;
 		displayHeight = metrics.heightPixels;
 
-		setZoom(savedZoom == 0 ? zoom : savedZoom);
-		savedZoom = 0;
+		if (zoom != 1.)
+		{
+			if (savedZoom == 0.)
+				savedZoom = this.zoom;
+			this.zoom = zoom;
+		}
+		else if (savedZoom != 0.)
+		{
+			this.zoom = savedZoom;
+			savedZoom = 0.;
+		}
+		setZoom(this.zoom);
+
 		tileController.setProvider(tileProvider);
 		recalculateCache();
 		isActive = true;
 	}
 	
 	@Override
-	public void deactivate()
+	public synchronized void deactivate()
 	{
 		if (!isActive)
 			return;
 		isActive = false;
 		tileController.interrupt();
 		cache.destroy();
-		if (savedZoom != 0)
+		if (savedZoom != 0.)
 			zoom = savedZoom;
-		savedZoom = 0;
+		savedZoom = 0.;
 		cache = null;
 	}
 	
@@ -400,7 +411,7 @@ public class OnlineMap extends Map
 	}
 
 	@Override
-	public void setZoom(double z)
+	public synchronized void setZoom(double z)
 	{
 		int zDiff = (int) (Math.log(z) / Math.log(2));
 		Log.e("ONLINE", "Zoom: " + z + " diff: " + zDiff);
