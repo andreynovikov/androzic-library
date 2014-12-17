@@ -317,6 +317,26 @@ public class Datum {
         to.lon = Math.toDegrees(frlon + dlambda);
         to.h   = from.h   + dheight;
 
+        if (to.lat > 90.)
+        {
+        	System.err.println("Ubnormal, lat > 90: " + to.lat);
+        	to.lat = 90.;
+        }
+        if (to.lat < -90.)
+        {
+        	System.err.println("Ubnormal, lat < -90: " + to.lat);
+        	to.lat = -90.;
+        }
+        if (to.lon > 180.)
+        {
+        	System.err.println("Ubnormal, lon > 180: " + to.lon);
+        	to.lon = 180.;
+        }
+        if (to.lon < -180.)
+        {
+        	System.err.println("Ubnormal, lon < -180: " + to.lon);
+        	to.lon = -180.;
+        }
 		return to;
     }
 }
