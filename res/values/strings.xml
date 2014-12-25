@@ -1,7 +1,0 @@
-<resources>
-
-    <string name="done" translatable="false">Done</string>
-    <string name="save" translatable="false">Save</string>
-    <string name="cancel" translatable="false">Cancel</string>
-
-</resources>
