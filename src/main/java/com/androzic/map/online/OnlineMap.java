@@ -143,11 +143,6 @@ public class OnlineMap extends Map
 		return isActive;
 	}
 	
-	public TileProvider getTileProvider()
-	{
-		return tileProvider;
-	}
-
 	@Override
 	public boolean coversLatLon(double lat, double lon)
 	{
@@ -234,10 +229,7 @@ public class OnlineMap extends Map
 				if (tile != null && ! tile.isRecycled())
 				{
 					if (tile.getWidth() != tw)
-					{
-						Bitmap scaled = Bitmap.createScaledBitmap(tile, tw, th, true);
-						tile = scaled;
-					}
+						tile = Bitmap.createScaledBitmap(tile, tw, th, true);
 					float tx = w2mx + j * tile_w;
 					float ty = h2my + i * tile_h;
 					c.drawBitmap(tile, tx, ty, null);
@@ -256,8 +248,7 @@ public class OnlineMap extends Map
 			{
 		        int sw = (int) (dynZoom * TILE_WIDTH);
 		        int sh = (int) (dynZoom * TILE_HEIGHT);
-				Bitmap scaled = Bitmap.createScaledBitmap(tile.bitmap, sw, sh, true);
-				tile.bitmap = scaled;
+				tile.bitmap = Bitmap.createScaledBitmap(tile.bitmap, sw, sh, true);
 			}
 		}
 		return tile.bitmap;
@@ -343,6 +334,7 @@ public class OnlineMap extends Map
 		return true;
 	}
 
+	@SuppressWarnings("UnusedDeclaration")
 	public boolean getOsmXYByLatLon(double lat, double lon, int[] xy)
 	{
 		double n = Math.pow(2.0, srcZoom);
@@ -371,15 +363,6 @@ public class OnlineMap extends Map
 	}
 
 	@Override
-	public double getNextZoom()
-	{
-		if (srcZoom >= tileProvider.maxZoom)
-			return 0.0;
-		Log.e("ONLINE", "Next zoom: " + Math.pow(2, this.srcZoom + 1 - defZoom));
-		return Math.pow(2, this.srcZoom + 1 - defZoom);
-	}
-
-	@Override
 	public void recalculateCache()
 	{
 		TileRAMCache oldcache = cache;
@@ -396,12 +379,21 @@ public class OnlineMap extends Map
 	}
 
 	@Override
+	public double getNextZoom()
+	{
+		if (srcZoom >= tileProvider.maxZoom)
+			return 0.0;
+		return Math.pow(2, srcZoom + 1 - defZoom);
+	}
+
+	@Override
 	public double getPrevZoom()
 	{
 		if (srcZoom <= tileProvider.minZoom)
 			return 0.0;
-		Log.e("ONLINE", "Prev zoom: " + Math.pow(2, this.srcZoom - 1 - defZoom));
-		return Math.pow(2, this.srcZoom - 1 - defZoom);
+		if (dynZoom != 1.)
+			return Math.pow(2, srcZoom - defZoom);
+		return Math.pow(2, srcZoom - 1 - defZoom);
 	}
 
 	@Override
@@ -414,18 +406,15 @@ public class OnlineMap extends Map
 	public synchronized void setZoom(double z)
 	{
 		int zDiff = (int) (Math.log(z) / Math.log(2));
-		Log.e("ONLINE", "Zoom: " + z + " diff: " + zDiff);
 
 		srcZoom = (byte) (defZoom + zDiff);
 		
 		if (srcZoom > tileProvider.maxZoom)
 		{
-			zDiff -= srcZoom - tileProvider.maxZoom;
 			srcZoom = tileProvider.maxZoom;
 		}
 		if (srcZoom < tileProvider.minZoom)
 		{
-			zDiff -= srcZoom - tileProvider.minZoom;
 			srcZoom = tileProvider.minZoom;
 		}
 
@@ -433,8 +422,7 @@ public class OnlineMap extends Map
 		dynZoom = zoom / Math.pow(2, srcZoom - defZoom);
 		if (Math.abs(dynZoom - 1) < 0.0078125)
 			dynZoom = 1.0;
-		Log.e("ONLINE", "z: " + srcZoom + " diff: " + zDiff + " zoom: " + zoom + " dymZoom: " + dynZoom);
-		
+
 		recalculateCache();
 		
 		tileController.reset();
@@ -455,7 +443,7 @@ public class OnlineMap extends Map
 
 	public List<String> info()
 	{
-		ArrayList<String> info = new ArrayList<String>();
+		ArrayList<String> info = new ArrayList<>();
 		
 		info.add("title: " + title);
 		if (projection != null)
