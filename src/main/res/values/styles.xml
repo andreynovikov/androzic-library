@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="BlackTheme" parent="@android:style/Theme.Black">
-        <item name="horizontalPadding">6dip</item>
-    </style>
-
-    <style name="BlackDialog" parent="@android:style/Theme.Dialog">
-        <item name="horizontalPadding">6dip</item>
-    </style>
+    <style name="Dialog" parent="@android:style/Theme.Dialog" />
 
     <style name="ButtonBar" parent="@android:style/ButtonBar"></style>
 

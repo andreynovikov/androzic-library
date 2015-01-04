@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Dialog" parent="@android:style/Theme.Material.Dialog"/>
+
+    <style name="ContentLayout">
+        <item name="android:paddingTop">16dip</item>
+        <item name="android:paddingBottom">16dip</item>
+        <item name="android:paddingLeft">24dip</item>
+        <item name="android:paddingRight">24dip</item>
+    </style>
+
+</resources>
