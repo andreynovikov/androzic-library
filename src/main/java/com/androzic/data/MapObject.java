@@ -27,6 +27,7 @@ public class MapObject
 	public long _id = 0;
 	public String name = "";
 	public String description = "";
+	@Deprecated
 	public String image = "";
 	public String marker = "";
 	public int pin = 0;
