@@ -24,9 +24,10 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import com.jhlabs.map.GeodeticPosition;
-import com.jhlabs.map.ReferenceException;
-import com.jhlabs.map.UTMReference;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.coords.MGRSCoord;
+import gov.nasa.worldwind.geom.coords.UPSCoord;
+import gov.nasa.worldwind.geom.coords.UTMCoord;
 
 public class StringFormatter
 {
@@ -58,44 +59,44 @@ public class StringFormatter
 	public static String minuteAbbr = "min";
 	public static String hourAbbr = "h";
 	
-	public static final String distanceH(final double distance)
+	public static String distanceH(final double distance)
 	{
 		return distanceH(distance, 2000);
 	}
 
-	public static final String distanceH(double distance, int threshold)
+	public static String distanceH(double distance, int threshold)
 	{
 		String[] dist = distanceC(distance, threshold);
 		return dist[0] + " " + dist[1];
 	}
 
-	public static final String distanceH(double distance, String format)
+	public static String distanceH(double distance, String format)
 	{
 		return distanceH(distance, format, 2000);
 	}
 
-	public static final String distanceH(double distance, String format, int threshold)
+	public static String distanceH(double distance, String format, int threshold)
 	{
 		String[] dist = distanceC(distance, format, threshold);
 		return dist[0] + " " + dist[1];
 	}
 
-	public static final String[] distanceC(final double distance)
+	public static String[] distanceC(final double distance)
 	{
 		return distanceC(distance, 2000);
 	}
 
-	public static final String[] distanceC(final double distance, int threshold)
+	public static String[] distanceC(final double distance, int threshold)
 	{
 		return distanceC(distance, "%.0f", threshold);
 	}
 
-	public static final String[] distanceC(final double distance, final String format)
+	public static String[] distanceC(final double distance, final String format)
 	{
 		return distanceC(distance, format, 2000);
 	}
 	
-	public static final String[] distanceC(final double distance, final String format, int threshold)
+	public static String[] distanceC(final double distance, final String format, int threshold)
 	{
 		double dist = distance * distanceShortFactor;
 		String distunit = distanceShortAbbr;
@@ -108,32 +109,32 @@ public class StringFormatter
 		return new String[] {String.format(format, dist), distunit};
 	}
 
-	public static final String speedH(final double speed)
+	public static String speedH(final double speed)
 	{
 		return speedC(speed) + " " + speedAbbr;
 	}
 
-	public static final String speedC(final double speed)
+	public static String speedC(final double speed)
 	{
 		return String.format(precisionFormat, speed * speedFactor);
 	}
 
-	public static final String elevationH(final double elevation)
+	public static String elevationH(final double elevation)
 	{
 		return elevationC(elevation) + " " + elevationAbbr;
 	}
 
-	public static final String elevationC(final double elevation)
+	public static String elevationC(final double elevation)
 	{
 		return String.format(elevationFormat, elevation * elevationFactor);
 	}
 
-	public static final String coordinate(double coordinate)
+	public static String coordinate(double coordinate)
 	{
 		return coordinate(coordinateFormat, coordinate);
 	}
 
-	public static final String coordinate(int format, double coordinate)
+	public static String coordinate(int format, double coordinate)
 	{
 		switch (format)
 		{
@@ -167,18 +168,18 @@ public class StringFormatter
 	}
 
 	/**
-	 * Formats coordinates according to currently selected format as one string with specified delimeter between coordinates (if applicable).
-	 * @param delimeter Delimeter between latitude and longitude
+	 * Formats coordinates according to currently selected format as one string with specified delimiter between coordinates (if applicable).
+	 * @param delimiter Delimiter between latitude and longitude
 	 * @param latitude Latitude
 	 * @param longitude Longitude
-	 * @return
+	 * @return string representation of coordinates
 	 */
-	public static final String coordinates(String delimeter, double latitude, double longitude)
+	public static String coordinates(String delimiter, double latitude, double longitude)
 	{
-		return coordinates(coordinateFormat, delimeter, latitude, longitude);
+		return coordinates(coordinateFormat, delimiter, latitude, longitude);
 	}
 
-	public static final String coordinates(int format, String delimeter, double latitude, double longitude)
+	public static String coordinates(int format, String delimiter, double latitude, double longitude)
 	{
 		switch (format)
 		{
@@ -186,23 +187,43 @@ public class StringFormatter
 			case 1:
 			case 2:
 			{
-				return coordinate(format, latitude) + delimeter + coordinate(format, longitude);
+				return coordinate(format, latitude) + delimiter + coordinate(format, longitude);
 			}
 			case 3:
 			{
-				String coords; 
 				try
 				{
-					coords = UTMReference.toUTMRefString(new GeodeticPosition(latitude, longitude));
-					return coords;
+					Angle lat = Angle.fromDegrees(latitude);
+					Angle lon = Angle.fromDegrees(longitude);
+					if (latitude < 84 && latitude > -80)
+						return UTMCoord.fromLatLon(lat, lon).toString();
+					else
+						return UPSCoord.fromLatLon(lat, lon).toString();
 				}
-				catch (ReferenceException ex)
+				catch (IllegalArgumentException e)
 				{
+					e.printStackTrace();
+					break;
 				}
 				
 			}
+			case 4:
+			{
+				try
+				{
+					Angle lat = Angle.fromDegrees(latitude);
+					Angle lon = Angle.fromDegrees(longitude);
+					return MGRSCoord.fromLatLon(lat, lon).toString();
+				}
+				catch (IllegalArgumentException e)
+				{
+					e.printStackTrace();
+					break;
+				}
+			}
 		}
-		return String.valueOf(latitude) + delimeter + String.valueOf(longitude);
+		// On any error fall back to default lat/lon coordinates format
+		return coordDegFormat.format(latitude) + delimiter + coordDegFormat.format(longitude);
 	}
 
 	public static String bearingH(double bearing)
@@ -210,7 +231,7 @@ public class StringFormatter
 		return String.format("%.0f", bearing)+"\u00B0";
 	}
 
-	public static final String bearingSimpleH(double bearing)
+	public static String bearingSimpleH(double bearing)
 	{
 		if (bearing <  22 || bearing >= 338) return "\u2191"; // N
 		if (bearing <  67 && bearing >=  22) return "\u2197"; // NE
@@ -233,7 +254,7 @@ public class StringFormatter
 	 * @param minutes time in minutes
 	 * @return Time period
 	 */
-	public static final String[] timeC(int minutes)
+	public static String[] timeC(int minutes)
 	{
 		int hour = 0;
 		int min = minutes;
@@ -262,22 +283,20 @@ public class StringFormatter
 	 * @param timeout timeout in seconds 
 	 * @return Time period
 	 */
-	public static final String[] timeCP(int seconds, int timeout)
+	@SuppressWarnings("UnusedDeclaration")
+	public static String[] timeCP(int seconds, int timeout)
 	{
-		int sec = seconds;
-		int min = 0;
-		boolean t = sec > timeout;
+		boolean t = seconds > timeout;
 
 		System.err.print("CP " + seconds + " " + timeout);
-		if (sec <= 59)
+		if (seconds <= 59)
 		{
 			if (t)
 				return new String[] {"> " + String.valueOf(timeout), secondAbbr};
 			else
-				return new String[] {String.valueOf(sec), secondAbbr};
+				return new String[] {String.valueOf(seconds), secondAbbr};
 		}
-		min = (int) Math.floor(sec / 60);
-		sec = sec - min * 60;
+		int min = (int) Math.floor(seconds / 60);
 		if (t)
 		{
 			min = (int) Math.floor(timeout / 60);
@@ -287,7 +306,7 @@ public class StringFormatter
 			return new String[] {String.valueOf(min), minuteAbbr};
 	}
 
-	public static final String timeR(int minutes)
+	public static String timeR(int minutes)
 	{
 		int hour = 0;
 		int min = minutes;
