@@ -54,6 +54,10 @@ public class StringFormatter
 	public static double elevationFactor;
 	public static String elevationAbbr;
 
+	public static String angleFormat = "%.0f";
+	public static double angleFactor;
+	public static String angleAbbr;
+
 	//FIXME Should localize:
 	public static String secondAbbr = "sec";
 	public static String minuteAbbr = "min";
@@ -127,6 +131,24 @@ public class StringFormatter
 	public static String elevationC(final double elevation)
 	{
 		return String.format(elevationFormat, elevation * elevationFactor);
+	}
+
+	public static String angleH(final double angle)
+	{
+		if (angleFactor == 1d)
+		{
+			// Special case for degrees: use symbol instead of abbreviation
+			return String.format(angleFormat, angle)+"\u00B0";
+		}
+		else
+		{
+			return angleC(angle) + " " + angleAbbr;
+		}
+	}
+
+	public static String angleC(final double angle)
+	{
+		return String.format(angleFormat, angle / angleFactor);
 	}
 
 	public static String coordinate(double coordinate)
@@ -224,11 +246,6 @@ public class StringFormatter
 		}
 		// On any error fall back to default lat/lon coordinates format
 		return coordDegFormat.format(latitude) + delimiter + coordDegFormat.format(longitude);
-	}
-
-	public static String bearingH(double bearing)
-	{
-		return String.format("%.0f", bearing)+"\u00B0";
 	}
 
 	public static String bearingSimpleH(double bearing)
