@@ -23,6 +23,8 @@ package com.androzic;
 import android.app.Application;
 import android.os.Build;
 
+import java.io.File;
+
 public abstract class BaseApplication extends Application
 {
 	private static BaseApplication self;
@@ -38,7 +40,7 @@ public abstract class BaseApplication extends Application
 		self = instance;
 	}
 
-	public abstract String getRootPath();
+	public abstract File getCacheDir();
 
 	/**
 	 * Returns device name in user-friendly format

@@ -73,19 +73,23 @@ public class TileFactory
 		BaseApplication application = BaseApplication.getApplication();
 		if (application == null)
 			return null;
-		
-		String filename = z + File.separator + tx + "-" + ty;
-		File file = new File(application.getRootPath() + File.separator + "tiles" + File.separator + provider.code + File.separator + filename);
-		if (file.exists() == false)
+
+		File cache = application.getCacheDir();
+		if (cache == null) // cache is not available now
+			return null;
+
+		File file = getTileFile(cache, provider.code, tx, ty, z);
+		if (! file.exists())
 			return null;
 		try
 		{
 			FileInputStream fileInputStream;
 			fileInputStream = new FileInputStream(file);
 			byte[] dat = new byte[(int) file.length()];
-			fileInputStream.read(dat);
+			int count = fileInputStream.read(dat);
 			fileInputStream.close();
-			return dat;
+			if (count == dat.length)
+				return dat;
 		}
 		catch (IOException e)
 		{
@@ -145,11 +149,14 @@ public class TileFactory
 		BaseApplication application = BaseApplication.getApplication();
 		if (application == null)
 			return;
-		
-		String filename = tx + "-" + ty;
-		File file = new File(application.getRootPath() + File.separator + "tiles" + File.separator + provider.code + File.separator + z + File.separator);
-		file.mkdirs();
-		file = new File(file.getAbsolutePath() + File.separator + filename);
+
+		File cache = application.getCacheDir();
+		if (cache == null) // cache is not available now
+			return;
+
+		File file = getTileFile(cache, provider.code, tx, ty, z);
+		//noinspection ResultOfMethodCallIgnored
+		file.getParentFile().mkdirs();
 		if (!file.exists())
 		{
 			FileOutputStream fileOutputStream;
@@ -176,5 +183,17 @@ public class TileFactory
 			byte[] data = bos.toByteArray();
 			saveTile(provider, data, t.x, t.y, t.zoomLevel);
 		}			
+	}
+
+	public static File getTileFile(File root, String provider, int x, int y, byte z)
+	{
+		return new File(root, "tiles"
+				+ File.separator + provider
+				+ File.separator + "z" + String.valueOf(z)
+				+ File.separator + String.valueOf(x / 1024)
+				+ File.separator + "x" + String.valueOf(x)
+				+ File.separator + String.valueOf(y / 1024)
+				+ File.separator + "y" + String.valueOf(y)
+				+ ".png");
 	}
 }
