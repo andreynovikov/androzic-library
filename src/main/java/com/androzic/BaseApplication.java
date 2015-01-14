@@ -23,6 +23,9 @@ package com.androzic;
 import android.app.Application;
 import android.os.Build;
 
+import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
+
 import java.io.File;
 
 public abstract class BaseApplication extends Application
@@ -40,11 +43,17 @@ public abstract class BaseApplication extends Application
 		self = instance;
 	}
 
+	/**
+	 * Returns external cache dir for storing non-permanent files (like online map tiles)
+	 * @return cache root directory, or null if cache storage is currently unavailable
+	 */
+	@Nullable
 	public abstract File getCacheDir();
 
 	/**
 	 * Returns device name in user-friendly format
 	 */
+	@NonNull
 	public static String getDeviceName()
 	{
 		String manufacturer = Build.MANUFACTURER;
