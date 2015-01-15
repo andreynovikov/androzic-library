@@ -10,9 +10,11 @@ package com.androzic.ui;
 import java.text.DecimalFormat;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Build;
 import android.preference.DialogPreference;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -26,13 +28,15 @@ import com.androzic.library.R;
  * SeekbarPreference class implements seekbar {@link android.preference.DialogPreference} edit.
  * <p>
  * Attributes supported:<br/>
- * <code>android:text</code> - current value display suffix (not required)<br/>
- * <code>android:dialogMessage</code> - dialog title (not required)<br/>
+ * <code>android:text</code> - current value display suffix, not required<br/>
+ * <code>android:dialogMessage</code> - dialog title, not required<br/>
+ * <code>android:defaultValue</code> - default value, integer, default 0<br/>
  * <p>
  * Styled attributes supported:<br/>
+ * <code>text</code> - reference to plurals resource to display current value, if set overrides android:text suffix<br/>
+ * <code>zeroText</code> - string to show instead of a value if current value equals to 0<br/>
  * <code>min</code> - minimum value, integer, default 0<br/>
  * <code>max</code> - maximum value, integer, default 100<br/>
- * <code>defaultValue</code> - default value, integer, default 0<br/>
  * <code>multiplier</code> - multiplier used for value display (note that it will not affect persisted value), default 1<br/>
  * <code>format</code> - format of value display, suitable for {@link java.text.DecimalFormat}, default "0"
  * 
@@ -43,39 +47,50 @@ public class SeekbarPreference extends DialogPreference implements SeekBar.OnSee
 	private static final String androidns = "http://schemas.android.com/apk/res/android";
 
 	private SeekBar mSeekBar;
-	private TextView mSplashText;
 	private TextView mValueText;
 	private Context mContext;
 
-	private String mDialogMessage, mSuffix;
-	private int mDefault, mMin, mMax, mValue = 0;
-	private float mMultiplier = 1.0f;
+	private String mDialogMessage, mSuffix, mZeroText;
+	private int mDefault, mMin, mMax, mValue = 0, mPluralText;
+	private double mMultiplier = 1d;
 	private DecimalFormat format;
 
 	public SeekbarPreference(Context context, AttributeSet attrs)
 	{
 		super(context, attrs);
 		mContext = context;
+		Resources resources = mContext.getResources();
+		int resId;
 
-		mDialogMessage = attrs.getAttributeValue(androidns, "dialogMessage");
-		mSuffix = attrs.getAttributeValue(androidns, "text");
-		
-		// max and default values are in private namespace because values from integer resource where
-		// incorrectly processed when specified in android namespace
-		TypedArray sattrs = context.obtainStyledAttributes(attrs, R.styleable.SeekbarPreference);
-		mDefault = sattrs.getInt(R.styleable.SeekbarPreference_defaultValue, 0);
-		mMin = sattrs.getInt(R.styleable.SeekbarPreference_min, 0);
-		mMax = sattrs.getInt(R.styleable.SeekbarPreference_max, 100);
-		mMultiplier = sattrs.getFloat(R.styleable.SeekbarPreference_multiplier, 1);
-		String fmt = sattrs.getString(R.styleable.SeekbarPreference_format);
+		resId = attrs.getAttributeResourceValue(androidns, "dialogMessage", 0);
+		if(resId != 0)
+			mDialogMessage = resources.getString(resId);
+		else
+			mDialogMessage = attrs.getAttributeValue(androidns, "dialogMessage");
+
+		resId = attrs.getAttributeResourceValue(androidns, "text", 0);
+		if(resId != 0)
+			mSuffix = resources.getString(resId);
+		else
+			mSuffix = attrs.getAttributeValue(androidns, "text");
+
+		TypedArray styledAttributes = context.obtainStyledAttributes(attrs, R.styleable.SeekbarPreference);
+		mPluralText =  styledAttributes.getResourceId(R.styleable.SeekbarPreference_text, 0);
+		if (mPluralText != 0 && !"plurals".equals(resources.getResourceTypeName(mPluralText)))
+			mPluralText = 0;
+		mZeroText = styledAttributes.getString(R.styleable.SeekbarPreference_zeroText);
+		mMin = styledAttributes.getInt(R.styleable.SeekbarPreference_min, 0);
+		mMax = styledAttributes.getInt(R.styleable.SeekbarPreference_max, 100);
+		mMultiplier = styledAttributes.getFloat(R.styleable.SeekbarPreference_multiplier, 1);
+		String fmt = styledAttributes.getString(R.styleable.SeekbarPreference_format);
 		if (fmt == null)
 			fmt = "0";
-		sattrs.recycle();
+		styledAttributes.recycle();
 		format = new DecimalFormat(fmt);
 	}
 
 	@Override
-	protected void onBindView(View view)
+	protected void onBindView(@NonNull View view)
 	{
 		super.onBindView(view);
 		getValue();
@@ -92,9 +107,9 @@ public class SeekbarPreference extends DialogPreference implements SeekBar.OnSee
 		layout.setPadding(padding, padding, padding, padding);
 
 		if (mDialogMessage != null) {
-			mSplashText = new TextView(mContext);
-			mSplashText.setText(mDialogMessage);
-			layout.addView(mSplashText);
+			TextView splashText = new TextView(mContext);
+			splashText.setText(mDialogMessage);
+			layout.addView(splashText);
 		}
 
 		if (mContext != null) {
@@ -102,14 +117,14 @@ public class SeekbarPreference extends DialogPreference implements SeekBar.OnSee
 			mValueText.setGravity(Gravity.CENTER_HORIZONTAL);
 			mValueText.setTextSize(26);
 			params = new LinearLayout.LayoutParams(
-					LinearLayout.LayoutParams.FILL_PARENT,
+					LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT);
 			layout.addView(mValueText, params);
 		}
 
 		mSeekBar = new SeekBar(mContext);
 		layout.addView(mSeekBar, new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.FILL_PARENT,
+				LinearLayout.LayoutParams.MATCH_PARENT,
 				LinearLayout.LayoutParams.WRAP_CONTENT));
 
 		if (isPersistent())
@@ -122,26 +137,30 @@ public class SeekbarPreference extends DialogPreference implements SeekBar.OnSee
 	}
 
 	@Override
-	protected void onBindDialogView(View v)
+	protected void onBindDialogView(@NonNull View view)
 	{
-		super.onBindDialogView(v);
+		super.onBindDialogView(view);
 		mSeekBar.setMax(mMax - mMin);
 		setProgress(mValue - mMin);
 	}
 
 	@Override
-	protected void onSetInitialValue(boolean restore, Object defaultValue)
+	protected void onSetInitialValue(boolean restorePersistedValue, Object defaultValue)
 	{
-		super.onSetInitialValue(restore, defaultValue);
-		if (restore)
-			mValue = getPersistedInt(mValue);
+		if (restorePersistedValue)
+			mValue = getPersistedInt(0);
 		else
 			mValue = (Integer) defaultValue;
-//		mValue -= mMin;
+
 		if (shouldPersist())
-		{
 			persistInt(mValue);
-		}
+	}
+
+	@Override
+	protected Object onGetDefaultValue(TypedArray a, int index)
+	{
+		mDefault = a.getInteger(index, 0);
+		return mDefault;
 	}
 
 	@Override
@@ -149,7 +168,7 @@ public class SeekbarPreference extends DialogPreference implements SeekBar.OnSee
 	{
 		if (positiveResult)
 		{
-			if (callChangeListener(Integer.valueOf(mValue)) && shouldPersist())
+			if (callChangeListener(mValue) && shouldPersist())
 				persistInt(mValue);
 		}
 	}
@@ -157,6 +176,7 @@ public class SeekbarPreference extends DialogPreference implements SeekBar.OnSee
 	/**
 	 * Called when user changes progress value, stores value in persistent storage if applicable
 	 */
+	@Override
 	public void onProgressChanged(SeekBar seek, int value, boolean fromTouch)
 	{
 		mValue = value + mMin;
@@ -166,10 +186,12 @@ public class SeekbarPreference extends DialogPreference implements SeekBar.OnSee
 		}
 	}
 
+	@Override
 	public void onStartTrackingTouch(SeekBar seek)
 	{
 	}
 
+	@Override
 	public void onStopTrackingTouch(SeekBar seek)
 	{
 	}
@@ -241,18 +263,14 @@ public class SeekbarPreference extends DialogPreference implements SeekBar.OnSee
 	
 	private String getText(int value)
 	{
-		String t = format.format(value * mMultiplier);
+		double v = value * mMultiplier;
+		if (v == 0d && mZeroText != null)
+			return mZeroText;
+		String t = format.format(v);
+		if (mPluralText != 0)
+			return mContext.getResources().getQuantityString(mPluralText, (int) v, t);
 		if (mSuffix != null)
-			t = t.concat(mSuffix);
+			t = t.concat(" ").concat(mSuffix);
 		return t;
-	}
-	
-	/**
-	 * Returns fake progress for internal use
-	 * @return progress
-	 */
-	public int getProgress()
-	{
-		return mValue-mMin;
 	}
 }
