@@ -254,7 +254,7 @@ public class SASMap extends Map
 						Bitmap scaled = Bitmap.createScaledBitmap(tile.bitmap, sw, sh, true);
 						tile.bitmap = scaled;
 					}
-					cache.put(tile);
+					cache.put(tile.getKey(), tile);
 				}
 			}
 			return tile.bitmap;

@@ -234,7 +234,7 @@ public class OzfReader
 			if (cache != null && tileBitmap != null)
 			{
 				tile.bitmap = tileBitmap;
-				cache.put(tile);
+				cache.put(tile.getKey(), tile);
 			}
 		}
 		

@@ -1,6 +1,6 @@
 /*
  * Androzic - android navigation client that uses OziExplorer maps (ozf2, ozfx3).
- * Copyright (C) 2010-2012  Andrey Novikov <http://andreynovikov.info/>
+ * Copyright (C) 2010-2015  Andrey Novikov <http://andreynovikov.info/>
  *
  * This file is part of Androzic application.
  *
@@ -28,7 +28,7 @@ import com.androzic.util.CSV;
 
 public class TileProvider
 {
-	public ArrayList<String> servers = new ArrayList<String>();
+	public ArrayList<String> servers = new ArrayList<>();
 	public String path;
 	public String name;
 	public String code;
@@ -40,6 +40,10 @@ public class TileProvider
 	public OnlineMap instance = null;
 	public OnMapTileStateChangeListener listener = null;
 	public int tileSize = 25000;
+	/**
+	 * Tile TTL in milliseconds
+	 */
+	public int tileExpiration = 0;
 	private int nextServer = 0;
 	//TODO Better initialization?
 	private String locale = Locale.getDefault().toString();
@@ -117,9 +121,9 @@ public class TileProvider
 
 	/**
 	* See: http://msdn.microsoft.com/en-us/library/bb259689.aspx
-	* @param zoom
-	* @param tilex
-	* @param tiley
+	* @param zoom tile zoom
+	* @param tilex tile X
+	* @param tiley tile Y
 	* @return quadtree encoded tile number
 	*
 	*/

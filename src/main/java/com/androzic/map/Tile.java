@@ -41,6 +41,11 @@ public class Tile
 	public boolean generated = false;
 
 	/**
+	 * Indicates whether tile is expired (too old)
+	 */
+	public boolean expired = false;
+
+	/**
 	 * X number of this tile.
 	 */
 	public final int x;
@@ -134,8 +139,8 @@ public class Tile
 	{
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (int) (this.x ^ (this.x >>> 32));
-		result = prime * result + (int) (this.y ^ (this.y >>> 32));
+		result = prime * result + this.x;
+		result = prime * result + this.y;
 		result = prime * result + this.zoomLevel;
 		return result;
 	}

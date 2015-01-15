@@ -2,7 +2,7 @@
  * Copyright 2010 mapsforge.org
  *
  * Androzic - android navigation client that uses OziExplorer maps (ozf2, ozfx3).
- * Copyright (C) 2010-2013  Andrey Novikov <http://andreynovikov.info/>
+ * Copyright (C) 2010-2015  Andrey Novikov <http://andreynovikov.info/>
  *
  * This file is part of Androzic application.
  *
@@ -89,10 +89,7 @@ public class TileRAMCache
 	 */
 	public synchronized boolean containsKey(long key)
 	{
-		if (map != null)
-			return map.containsKey(key);
-		else
-			return false;
+		return map != null && map.containsKey(key);
 	}
 
 	/**
@@ -124,8 +121,8 @@ public class TileRAMCache
 	}
 
 	/**
-	 * @param tile
-	 *            key of the image whose data should be returned.
+	 * @param key
+	 *            key of the tile whose data should be returned
 	 * @return the tile
 	 * @see Map#get(Object)
 	 */
@@ -137,19 +134,22 @@ public class TileRAMCache
 	}
 
 	/**
+	 * @param key
+	 *            key of the tile
 	 * @param tile
-	 *            tile that should be cached.
+	 *            tile that should be cached
 	 * @see Map#put(Object, Object)
 	 */
-	public synchronized void put(Tile tile)
+	public synchronized void put(long key, Tile tile)
 	{
 		if (capacity > 0 && map != null)
 		{
-			long key = Tile.getKey(tile.x, tile.y, tile.zoomLevel);
 			if (map.containsKey(key))
 			{
 				Tile t = map.get(key);
 				if (t.generated && !tile.generated)
+					map.remove(key);
+				else if (t.expired && !tile.expired)
 					map.remove(key);
 				// the item is already in the cache
 				else

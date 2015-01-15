@@ -1,6 +1,6 @@
 /*
  * Androzic - android navigation client that uses OziExplorer maps (ozf2, ozfx3).
- * Copyright (C) 2010-2013  Andrey Novikov <http://andreynovikov.info/>
+ * Copyright (C) 2010-2015  Andrey Novikov <http://andreynovikov.info/>
  *
  * This file is part of Androzic application.
  *
@@ -28,27 +28,25 @@ import com.androzic.map.TileRAMCache;
 
 public class TileController extends Thread
 {
-	LinkedList<Tile> pendingList;
-	Hashtable<Long, Tile> tileMap;
-	Thread mThreada;
-	Thread mThreadb;
-	Thread mThreadc;
-	Thread mThreadd;
+	final LinkedList<Tile> pendingList = new LinkedList<>();
+	final Hashtable<Long, Tile> tileMap = new Hashtable<>();
+	Thread threadA;
+	Thread threadB;
+	Thread threadC;
+	Thread threadD;
 	private TileProvider provider;
 	private TileRAMCache cache;
 
 	public TileController()
 	{
-		pendingList = new LinkedList<Tile>();
-		tileMap = new Hashtable<Long, Tile>();
-		mThreada = new Thread(this);
-		mThreada.start();
-		mThreadb = new Thread(this);
-		mThreadb.start();
-		mThreadc = new Thread(this);
-		mThreadc.start();
-		mThreadd = new Thread(this);
-		mThreadd.start();
+		threadA = new Thread(this);
+		threadA.start();
+		threadB = new Thread(this);
+		threadB.start();
+		threadC = new Thread(this);
+		threadC.start();
+		threadD = new Thread(this);
+		threadD.start();
 	}
 
 	public void run()
@@ -70,12 +68,13 @@ public class TileController extends Thread
 					}
 					continue;
 				}
-				tileMap.remove(t.getKey());
+				long key = t.getKey();
+				tileMap.remove(key);
 				TileFactory.downloadTile(provider, t);
-				if (t.bitmap != null && !t.generated)
+				if (t.bitmap != null)
 				{
 					TileFactory.saveTile(provider, t);
-					cache.put(t);
+					cache.put(key, t);
 				}
 			}
 			catch (Exception e)
@@ -90,10 +89,10 @@ public class TileController extends Thread
 	 */
 	public void interrupt()
 	{
-		mThreada.interrupt();
-		mThreadb.interrupt();
-		mThreadc.interrupt();
-		mThreadd.interrupt();
+		threadA.interrupt();
+		threadB.interrupt();
+		threadC.interrupt();
+		threadD.interrupt();
 	}
 
 	/**
@@ -118,31 +117,30 @@ public class TileController extends Thread
 		{
 			t = new Tile(tx, ty, tz);
 			TileFactory.loadTile(provider, t);
+			if (t.expired)
+				queueForDownload(key, t);
 			if (t.bitmap == null)
 			{
 				TileFactory.generateTile(provider, cache, t);
 				if (t.bitmap != null)
-					cache.put(t);
-				tileMap.put(key, t);
-				synchronized (pendingList)
-				{
-					pendingList.add(t);
-				}
-				synchronized (this)
-				{
-					notifyAll();
-				}
+					cache.put(key, t);
+				queueForDownload(key, t);
 			}
 			else
 			{
-				cache.put(t);
+				cache.put(key, t);
 			}
 		}
 		return t;
 	}
-	
-	public void startTileDownloading()
+
+	private void queueForDownload(long key, Tile tile)
 	{
+		tileMap.put(key, tile);
+		synchronized (pendingList)
+		{
+			pendingList.add(tile);
+		}
 		synchronized (this)
 		{
 			notifyAll();
@@ -150,12 +148,15 @@ public class TileController extends Thread
 	}
 
 	/**
-	 * Reset the Tiles to 0
+	 * Reset tile download queue
 	 */
 	public void reset()
 	{
-		tileMap = new Hashtable<Long, Tile>();
-		pendingList = new LinkedList<Tile>();
+		tileMap.clear();
+		synchronized (pendingList)
+		{
+			pendingList.clear();
+		}
 	}
 
 	public void setCache(TileRAMCache cache)

@@ -1,6 +1,6 @@
 /*
  * Androzic - android navigation client that uses OziExplorer maps (ozf2, ozfx3).
- * Copyright (C) 2010-2013  Andrey Novikov <http://andreynovikov.info/>
+ * Copyright (C) 2010-2015  Andrey Novikov <http://andreynovikov.info/>
  *
  * This file is part of Androzic application.
  *
@@ -39,70 +39,58 @@ import com.androzic.map.TileRAMCache;
 
 public class TileFactory
 {
-	public static Bitmap downloadTile(TileProvider provider, int x, int y, byte z)
+	public static void downloadTile(TileProvider provider, Tile t)
 	{
-		String url = provider.getTileUri(x, y, z);
+		String url = provider.getTileUri(t.x, t.y, t.zoomLevel);
 		try
 		{
 			URLConnection c = new URL(url).openConnection();
 			c.setConnectTimeout(50000);
 			c.connect();
-			return BitmapFactory.decodeStream(c.getInputStream());
+			t.bitmap = BitmapFactory.decodeStream(c.getInputStream());
+			if (t.bitmap != null)
+			{
+				t.generated = false;
+				t.expired = false;
+				if (provider.listener != null)
+					provider.listener.onTileObtained();
+			}
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
-		return null;
 	}
 
-	public static void downloadTile(TileProvider provider, Tile t)
-	{
-		Bitmap bitmap = downloadTile(provider, t.x, t.y, t.zoomLevel);
-		if ( bitmap != null )
-		{
-			t.bitmap = bitmap;
-			t.generated = false;
-			if (provider.listener != null)
-				provider.listener.onTileObtained();
-		}
-	}
-
-	public static byte[] loadTile(TileProvider provider, int tx, int ty, byte z)
+	public static void loadTile(TileProvider provider, Tile t)
 	{
 		BaseApplication application = BaseApplication.getApplication();
 		if (application == null)
-			return null;
+			return;
 
 		File cache = application.getCacheDir();
 		if (cache == null) // cache is not available now
-			return null;
+			return;
 
-		File file = getTileFile(cache, provider.code, tx, ty, z);
+		File file = getTileFile(cache, provider.code, t.x, t.y, t.zoomLevel);
 		if (! file.exists())
-			return null;
+			return;
 		try
 		{
 			FileInputStream fileInputStream;
 			fileInputStream = new FileInputStream(file);
-			byte[] dat = new byte[(int) file.length()];
-			int count = fileInputStream.read(dat);
+			byte[] data = new byte[(int) file.length()];
+			int count = fileInputStream.read(data);
 			fileInputStream.close();
-			if (count == dat.length)
-				return dat;
+			if (count != data.length)
+				return;
+			t.bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+			t.expired = provider.tileExpiration > 0 && file.lastModified() + provider.tileExpiration < System.currentTimeMillis();
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		return null;
-	}
-
-	public static void loadTile(TileProvider provider, Tile t)
-	{
-		byte[] data = loadTile(provider, t.x, t.y, t.zoomLevel);
-		if (data != null)
-			t.bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
 	}
 	
 	public static void generateTile(TileProvider provider, TileRAMCache cache, Tile t)
@@ -157,20 +145,17 @@ public class TileFactory
 		File file = getTileFile(cache, provider.code, tx, ty, z);
 		//noinspection ResultOfMethodCallIgnored
 		file.getParentFile().mkdirs();
-		if (!file.exists())
+		FileOutputStream fileOutputStream;
+		try
 		{
-			FileOutputStream fileOutputStream;
-			try
-			{
-				fileOutputStream = new FileOutputStream(file);
-				fileOutputStream.write(dat);
-				fileOutputStream.flush();
-				fileOutputStream.close();
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
+			fileOutputStream = new FileOutputStream(file);
+			fileOutputStream.write(dat);
+			fileOutputStream.flush();
+			fileOutputStream.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
 		}
 	}
 
