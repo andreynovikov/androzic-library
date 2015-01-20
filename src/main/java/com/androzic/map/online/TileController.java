@@ -30,23 +30,19 @@ public class TileController extends Thread
 {
 	final LinkedList<Tile> pendingList = new LinkedList<>();
 	final Hashtable<Long, Tile> tileMap = new Hashtable<>();
-	Thread threadA;
-	Thread threadB;
-	Thread threadC;
-	Thread threadD;
+	Thread[] threads;
 	private TileProvider provider;
 	private TileRAMCache cache;
 
-	public TileController()
+	public TileController(TileProvider provider)
 	{
-		threadA = new Thread(this);
-		threadA.start();
-		threadB = new Thread(this);
-		threadB.start();
-		threadC = new Thread(this);
-		threadC.start();
-		threadD = new Thread(this);
-		threadD.start();
+		this.provider = provider;
+		threads = new Thread[provider.threads];
+		for (int i = 0; i < threads.length; i++)
+		{
+			threads[i] = new Thread(this);
+			threads[i].start();
+		}
 	}
 
 	public void run()
@@ -89,10 +85,8 @@ public class TileController extends Thread
 	 */
 	public void interrupt()
 	{
-		threadA.interrupt();
-		threadB.interrupt();
-		threadC.interrupt();
-		threadD.interrupt();
+		for (Thread thread : threads)
+			thread.interrupt();
 	}
 
 	/**
@@ -162,10 +156,5 @@ public class TileController extends Thread
 	public void setCache(TileRAMCache cache)
 	{
 		this.cache = cache;
-	}
-
-	public void setProvider(TileProvider provider)
-	{
-		this.provider = provider;
 	}
 }

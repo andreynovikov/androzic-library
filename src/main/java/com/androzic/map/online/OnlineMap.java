@@ -38,6 +38,8 @@ import com.jhlabs.map.proj.ProjectionFactory;
 
 public class OnlineMap extends Map
 {
+	private static final String TAG = "OnlineMap";
+
 	private static final long serialVersionUID = 2L;
 	
 	private static final int ORIG_TILE_WIDTH = 256;
@@ -65,7 +67,7 @@ public class OnlineMap extends Map
 	    projection.initialize();
 	    
 	    tileProvider = provider;
-	    tileController = new TileController();
+	    tileController = new TileController(tileProvider);
 
 	    title = String.format("%s (%d)", tileProvider.name, z);
 		srcZoom = z;
@@ -119,7 +121,8 @@ public class OnlineMap extends Map
 		}
 		setZoom(this.zoom);
 
-		tileController.setProvider(tileProvider);
+		tileProvider.activate();
+
 		recalculateCache();
 		isActive = true;
 	}
@@ -132,6 +135,7 @@ public class OnlineMap extends Map
 		isActive = false;
 		tileController.interrupt();
 		cache.destroy();
+		tileProvider.deactivate();
 		if (savedZoom != 0.)
 			zoom = savedZoom;
 		savedZoom = 0.;
@@ -225,7 +229,6 @@ public class OnlineMap extends Map
 			for (int j = c_min; j < c_max; j++)
 			{
 				Bitmap tile = getTile(j, i);
-
 				if (tile != null && ! tile.isRecycled())
 				{
 					if (tile.getWidth() != tw)
@@ -369,7 +372,7 @@ public class OnlineMap extends Map
 		int nx = (int) Math.ceil(displayWidth * 1. / (TILE_WIDTH * dynZoom)) + 2;
 		int ny = (int) Math.ceil(displayHeight * 1. / (TILE_HEIGHT * dynZoom)) + 2;
 		int cacheSize = nx * ny;
-		Log.e("ONLINE", "Cache size: " + cacheSize);
+		Log.e(TAG, "Cache size: " + cacheSize);
 		cache = new TileRAMCache(cacheSize);
 		tileController.setCache(cache);
 		if (oldcache != null)

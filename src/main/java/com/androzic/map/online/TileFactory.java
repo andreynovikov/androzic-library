@@ -42,6 +42,8 @@ public class TileFactory
 	public static void downloadTile(TileProvider provider, Tile t)
 	{
 		String url = provider.getTileUri(t.x, t.y, t.zoomLevel);
+		if (url == null)
+			return;
 		try
 		{
 			URLConnection c = new URL(url).openConnection();
@@ -99,7 +101,7 @@ public class TileFactory
 		int parentTileX = t.x / 2, parentTileY = t.y / 2, scale = 2;
 
 		// Search for parent tile
-		for (; parentTileZoom >= 0; parentTileZoom--, parentTileX /= 2, parentTileY /= 2, scale *= 2)
+		for (; parentTileZoom >= provider.minZoom; parentTileZoom--, parentTileX /= 2, parentTileY /= 2, scale *= 2)
 		{
 			Tile parentTile = new Tile(parentTileX, parentTileY, parentTileZoom);
 
