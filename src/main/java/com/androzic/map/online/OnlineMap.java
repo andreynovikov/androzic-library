@@ -69,6 +69,11 @@ public class OnlineMap extends Map
 	    tileProvider = provider;
 	    tileController = new TileController(tileProvider);
 
+		if (z < tileProvider.minZoom)
+			z = tileProvider.minZoom;
+		if (z > tileProvider.maxZoom)
+			z = tileProvider.maxZoom;
+
 	    title = String.format("%s (%d)", tileProvider.name, z);
 		srcZoom = z;
 		defZoom = z;
@@ -223,10 +228,14 @@ public class OnlineMap extends Map
 		float h2my = height / 2 - map_xy[1];
 		int tw = Math.round(tile_w);
 		int th = Math.round(tile_h);
-		
-		for (int i = r_min; i < r_max; i++)
+
+		int i = osm_y, j = osm_x, dx = 0, dy = -1;
+		int t = Math.max(c_max - c_min + 1, r_max - r_min + 1);
+		int maxI = t*t;
+
+		for (int k = 0; k < maxI; k++)
 		{
-			for (int j = c_min; j < c_max; j++)
+			if (c_min <= j && j <= c_max && r_min <= i && i <= r_max)
 			{
 				Bitmap tile = getTile(j, i);
 				if (tile != null && ! tile.isRecycled())
@@ -238,7 +247,18 @@ public class OnlineMap extends Map
 					c.drawBitmap(tile, tx, ty, null);
 				}
 			}
+
+			int x = j - osm_x, y = i - osm_y;
+			if( (x == y) || ((x < 0) && (x == -y)) || ((x > 0) && (x == 1-y)))
+			{
+				t = dx;
+				dx = -dy;
+				dy = t;
+			}
+			j += dx;
+			i += dy;
 		}
+
 		return result;
 	}
 
