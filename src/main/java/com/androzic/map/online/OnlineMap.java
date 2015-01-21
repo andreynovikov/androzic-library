@@ -48,9 +48,9 @@ public class OnlineMap extends Map
 	public static int TILE_HEIGHT = 256;
 	
 	private static double prescaleFactor = 1.;
-	
+
+	public TileProvider tileProvider;
 	private TileController tileController;
-	private TileProvider tileProvider;
 	private boolean isActive = false;
 	private byte srcZoom;
 	private byte defZoom;

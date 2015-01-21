@@ -106,9 +106,6 @@ public class TileProviderFactory
 				id = resources.getIdentifier(map + "_license", "string", provider.activityInfo.packageName);
 				if (id != 0)
 					tileProvider.license = resources.getString(id);
-				id = resources.getIdentifier(map + "_link", "string", provider.activityInfo.packageName);
-				if (id != 0)
-					tileProvider.link = resources.getString(id);
 				id = resources.getIdentifier(map + "_threads", "integer", provider.activityInfo.packageName);
 				if (id != 0)
 					tileProvider.threads = resources.getInteger(id);

@@ -40,13 +40,9 @@ public abstract class TileProvider
 	 */
 	public String code;
 	/**
-	 * License string
+	 * License string (can be HTML containing links)
 	 */
 	public String license;
-	/**
-	 * License reference link
-	 */
-	public String link;
 	public byte minZoom = 0;
 	public byte maxZoom = 18;
 	public boolean inverseY = false;
