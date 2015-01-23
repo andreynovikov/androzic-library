@@ -9,6 +9,16 @@
 
     <style name="ButtonBarContainer"></style>
 
+    <style name="TooltipPopup" parent="android:Widget.TextView">
+        <item name="android:gravity">center</item>
+        <item name="android:minHeight">50dp</item>
+        <item name="android:minWidth">75dp</item>
+        <item name="android:maxWidth">150dp</item>
+        <item name="android:padding">6dp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
+    </style>
+
     <style name="ListItem">
         <item name="android:paddingTop">2dip</item>
         <item name="android:paddingBottom">2dip</item>
