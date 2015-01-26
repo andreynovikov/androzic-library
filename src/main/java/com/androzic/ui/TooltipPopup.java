@@ -112,6 +112,10 @@ public class TooltipPopup
 			xPos = anchorRect.centerX() - rootWidth / 2;
 		}
 
+		anchor.getRootView().getLocationOnScreen(location);
+		xPos -= location[0];
+		yPos -= location[1];
+
 		requestedX = anchorRect.width() > arrowWidth * 3 ? anchorRect.left + arrowWidth : anchorRect.centerX();
 		ViewGroup.MarginLayoutParams param = (ViewGroup.MarginLayoutParams) arrow.getLayoutParams();
 		param.leftMargin = (requestedX - xPos) - arrowWidth / 2;
