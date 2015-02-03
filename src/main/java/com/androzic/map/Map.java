@@ -22,29 +22,23 @@ package com.androzic.map;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Paint.Style;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.util.DisplayMetrics;
 
 import com.androzic.Log;
-import com.androzic.data.Bounds;
+import com.androzic.ui.Viewport;
 import com.jhlabs.Point2D;
-import com.jhlabs.map.proj.Projection;
-import com.jhlabs.map.proj.ProjectionException;
 
-public class Map implements Serializable
+public class Map extends BaseMap
 {
-	private static final long serialVersionUID = 9L;
+	private static final long serialVersionUID = 10L;
 
 	private static final double[] zoomLevelsSupported =
 	{
@@ -66,56 +60,33 @@ public class Map implements Serializable
 		5.00
 	};
 
-	public int id;
-	public String title;
-	public String mappath;
 	public String imagePath;
-	public String datum;
 	public String origDatum;
 	public int width;
 	public int height;
-	protected double mpp;
 	public double scaleFactor = 1.;
 	public String prjName;
 	public Grid llGrid;
 	public Grid grGrid;
-	protected Projection projection;
-	protected MapPoint[] cornerMarkers;
-	protected ArrayList<MapPoint> calibrationPoints = new ArrayList<MapPoint>();
-	protected transient double zoom = 1.;
-	protected transient double savedZoom = 0.;
+	protected ArrayList<MapPoint> calibrationPoints = new ArrayList<>();
 	private LinearBinding binding = new LinearBinding();
-	protected transient int displayWidth;
-	protected transient int displayHeight;
-	protected transient Path mapClipPath;
-	public transient Throwable loadError;
 	private transient OzfReader ozf;
-	protected transient TileRAMCache cache;
-	protected transient Bounds bounds;
-	protected transient Paint borderPaint;
-	
-	public Map()
+
+	public Map(String path)
 	{
+		super(path);
 	}
 
-	public Map(String filepath)
+	@Override
+	public synchronized void activate(OnMapTileStateChangeListener listener, DisplayMetrics metrics, double zoom) throws Throwable
 	{
-		mappath = filepath;
-		id = mappath.hashCode();
-	}
-	
-	public synchronized void activate(DisplayMetrics metrics, double zoom) throws IOException, OutOfMemoryError
-	{
-		displayWidth = metrics.widthPixels;
-		displayHeight = metrics.heightPixels;
-		
 		Log.d("OZI", "Image file specified: " + imagePath);
 		File image = new File(imagePath);
 		if (! image.exists())
 		{
 			imagePath = imagePath.replace("\\", "/");
 			image = new File(imagePath);
-			File map = new File(mappath);
+			File map = new File(path);
 			image = new File(map.getParentFile(), image.getName());
 			if (! image.exists())
 			{
@@ -124,52 +95,18 @@ public class Map implements Serializable
 		}
 		Log.d("OZI", "Image file found: " + image.getCanonicalPath());
 		ozf = new OzfReader(image);
-		mapClipPath = new Path();
-		if (zoom != 1.)
-		{
-			if (savedZoom == 0.)
-			savedZoom = this.zoom;
-			this.zoom = zoom;
-		}
-		else if (savedZoom != 0.)
-		{
-			this.zoom = savedZoom;
-			savedZoom = 0.;
-		}
-		setZoom(this.zoom);
-
-		borderPaint = new Paint();
-        borderPaint.setAntiAlias(true);
-        borderPaint.setStrokeWidth(3);
-        borderPaint.setColor(Color.RED);
-        borderPaint.setAlpha(128);
-        borderPaint.setStyle(Style.STROKE);
+		super.activate(listener, metrics, zoom);
 	}
-	
-	//TODO Extract this to base map class
+
+	@Override
 	public synchronized void deactivate()
 	{
+		super.deactivate();
 		//TODO This shouldn't happen but happens
 		if (ozf != null)
 			ozf.close();
 		ozf = null;
-		//TODO This shouldn't happen but happens
-		if (cache != null)
-			cache.destroy();
-		cache = null;
-		mapClipPath = null;
-		if (savedZoom != 0.)
-		{
-			zoom = savedZoom;
-			bind();
-		}
-		savedZoom = 0.;
-		borderPaint = null;
-	}
-	
-	public synchronized boolean activated()
-	{
-		return ozf != null;
+		bind(); // We need this if map was temporary zoomed
 	}
 	
 	public void addCalibrationPoint(MapPoint point)
@@ -177,26 +114,7 @@ public class Map implements Serializable
 		calibrationPoints.add(point);
 	}
 
-	public void setCornersAmount(int num)
-	{
-		cornerMarkers = new MapPoint[num];
-		for (int i = 0; i < num; i++)
-		{
-			cornerMarkers[i] = new MapPoint();
-		}
-	}
-
-	public Bounds getBounds()
-	{
-		if (bounds == null)
-		{
-			bounds = new Bounds();
-			for (MapPoint corner : cornerMarkers)
-				bounds.extend(corner.lat, corner.lon);
-		}
-		return bounds;
-	}
-	
+	@Override
 	public boolean getXYByLatLon(double lat, double lon, int[] xy)
 	{
 		double nn, ee;
@@ -212,7 +130,7 @@ public class Map implements Serializable
 		return (xy[0] >= 0 && xy[0] < width * zoom && xy[1] >= 0 && xy[1] < height * zoom);
 	}
 
-	// never used
+	@SuppressWarnings("UnusedDeclaration")
 	public boolean getXYByEN(int e, int n, int[] xy)
 	{
 		xy[0] = (int) Math.round(binding.Kx[0]*n + binding.Kx[1]*e + binding.Kx[2]);
@@ -221,7 +139,7 @@ public class Map implements Serializable
 		return (xy[0] >= 0 && xy[0] < width * zoom && xy[1] >= 0 && xy[1] < height * zoom);
 	}
 
-	// never used
+	@SuppressWarnings("UnusedDeclaration")
 	public boolean getENByXY(int x, int y, int[] en)
 	{
 		en[1] = (int) (binding.Klat[0]*x + binding.Klat[1]*y + binding.Klat[2]);
@@ -230,7 +148,7 @@ public class Map implements Serializable
 		return (x >= 0 && x < width * zoom && y >= 0 || y < height * zoom);
 	}
 
-	// never used
+	@SuppressWarnings("UnusedDeclaration")
 	public void getENByLatLon(double lat, double lon, int[] en)
 	{
         Point2D.Double src = new Point2D.Double(lon, lat);
@@ -240,13 +158,7 @@ public class Map implements Serializable
 		en[1] = (int) dst.y;
 	}
 
-	/**
-	 * Converts pixel coordinates to geodetic coordinates
-	 * @param x
-	 * @param y
-	 * @param ll
-	 * @return
-	 */
+	@Override
 	public boolean getLatLonByXY(int x, int y, double[] ll)
 	{
 		double nn, ee;
@@ -261,56 +173,6 @@ public class Map implements Serializable
 		ll[1] = dst.x;
 
 		return (x >= 0 && x < width * zoom && y >= 0 || y < height * zoom);
-	}
-	
-	/**
-	 * Checks if map covers given coordinates
-	 * @param lat latitude in degrees
-	 * @param lon longitude in degrees
-	 * @return true if coordinates are inside map
-	 */
-	public boolean coversLatLon(double lat, double lon)
-	{
-		int[] xy = new int[2];
-		boolean inside = false;
-		try
-		{
-			inside = getXYByLatLon(lat, lon, xy);
-		}
-		catch (ProjectionException e)
-		{
-			return false;
-		}
-		
-		// check corners
-		if (inside)
-		{
-			// rescale to original size
-			xy[0] = (int) (xy[0] / zoom);
-			xy[1] = (int) (xy[1] / zoom);
-			
-			//  Note that division by zero is avoided because the division is protected
-			//  by the "if" clause which surrounds it.
-
-			int j = cornerMarkers.length - 1;
-			int odd = 0;
-
-			for (int i=0; i < cornerMarkers.length; i++)
-			{
-				if (cornerMarkers[i].y < xy[1] && cornerMarkers[j].y >= xy[1] || cornerMarkers[j].y < xy[1] && cornerMarkers[i].y >= xy[1])
-				{
-					if (cornerMarkers[i].x + (xy[1] - cornerMarkers[i].y) * 1. / (cornerMarkers[j].y - cornerMarkers[i].y) * (cornerMarkers[j].x - cornerMarkers[i].x) < xy[0])
-					{
-						odd++;
-					}
-				}
-				j=i;
-			}
-			
-			inside = odd % 2 == 1;
-		}
-
-		return inside;
 	}
 
 	public boolean coversScreen(int[] map_xy, int width, int height)
@@ -361,22 +223,25 @@ public class Map implements Serializable
 		return (oddTL % 2 == 1) && (oddTR % 2 == 1) && (oddBL % 2 == 1) && (oddBR % 2 == 1);
 	}
 
-	public boolean containsArea(Bounds area)
+	@Override
+	public int getScaledWidth()
 	{
-		Bounds b = getBounds();
-		return b.intersects(area);
+		return (int) (width * zoom);
 	}
-	
+
+	@Override
+	public int getScaledHeight()
+	{
+		return (int) (height * zoom);
+	}
+
+	@Override
 	public double getMPP()
 	{
 		return mpp / getZoom();
 	}
 
-	public double getAbsoluteMPP()
-	{
-		return mpp;
-	}
-
+	@Override
 	public void recalculateCache()
 	{
 		if (cache != null)
@@ -393,6 +258,7 @@ public class Map implements Serializable
 		ozf.setCache(cache);
 	}
 
+	@Override
 	public double getNextZoom()
 	{
 		double zoomCurrent = getZoom();
@@ -411,6 +277,7 @@ public class Map implements Serializable
 			return 0.0;
 	}
 
+	@Override
 	public double getPrevZoom()
 	{
 		double zoomCurrent = getZoom();
@@ -429,6 +296,7 @@ public class Map implements Serializable
 			return 0.0;
 	}
 
+	@Override
 	synchronized public double getZoom()
 	{
 		if (ozf != null)
@@ -437,11 +305,7 @@ public class Map implements Serializable
 			return 1.;
 	}
 
-	public void zoomBy(double factor)
-	{
-		setZoom(zoom * factor);
-	}
-	
+	@Override
 	public synchronized void setZoom(double z)
 	{
 		Log.e("OZI", "[" + title + "] setZoom: " + z);
@@ -455,24 +319,7 @@ public class Map implements Serializable
 		mapClipPath.close();		
 	}
 
-	public void setTemporaryZoom(double zoom)
-	{
-		if (savedZoom == 0.)
-			savedZoom = this.zoom;
-		Log.e("MAP", "setTemporaryZoom: " + zoom);
-		setZoom(zoom);
-	}
-
-	public int getScaledWidth()
-	{
-		return (int) (width * zoom);
-	}
-
-	public int getScaledHeight()
-	{
-		return (int) (height * zoom);
-	}
-	
+	@Override
 	public void getMapCenter(double[] center)
 	{
 		int x = getScaledWidth() / 2;
@@ -480,19 +327,19 @@ public class Map implements Serializable
 		getLatLonByXY(x, y, center);
 	}
 
-	synchronized public boolean drawMap(double[] loc, int[] lookAhead, int width, int height, boolean cropBorder, boolean drawBorder, Canvas c) throws OutOfMemoryError
+	synchronized public boolean drawMap(Viewport viewport, boolean cropBorder, boolean drawBorder, Canvas c) throws OutOfMemoryError
 	{
 		if (ozf == null)
 			return false;
 		int[] map_xy = new int[2];
-		getXYByLatLon(loc[0], loc[1], map_xy);
-		map_xy[0] -= lookAhead[0];
-		map_xy[1] -= lookAhead[1];
+		getXYByLatLon(viewport.mapCenter[0], viewport.mapCenter[1], map_xy);
+		map_xy[0] -= viewport.lookAheadXY[0];
+		map_xy[1] -= viewport.lookAheadXY[1];
 		try
 		{
 			Path clipPath = new Path();
 			if (cropBorder || drawBorder)
-				mapClipPath.offset(-map_xy[0] + width / 2, -map_xy[1] + height / 2, clipPath);			
+				mapClipPath.offset(-map_xy[0] + viewport.width / 2, -map_xy[1] + viewport.height / 2, clipPath);
             c.save();
 			if (cropBorder)
 				c.clipPath(clipPath);
@@ -510,11 +357,11 @@ public class Map implements Serializable
 				return false;
 			}
 
-			int c_min = (int) Math.floor(ozf.map_x_to_c(map_xy[0] - width / 2));
-			int c_max = (int) Math.ceil(ozf.map_x_to_c(map_xy[0] + width / 2));
+			int c_min = (int) Math.floor(ozf.map_x_to_c(map_xy[0] - viewport.width / 2));
+			int c_max = (int) Math.ceil(ozf.map_x_to_c(map_xy[0] + viewport.width / 2));
 			
-			int r_min = (int) Math.floor(ozf.map_y_to_r(map_xy[1] - height / 2));
-			int r_max = (int) Math.ceil(ozf.map_y_to_r(map_xy[1] + height / 2));
+			int r_min = (int) Math.floor(ozf.map_y_to_r(map_xy[1] - viewport.height / 2));
+			int r_max = (int) Math.ceil(ozf.map_y_to_r(map_xy[1] + viewport.height / 2));
 			
 			boolean result = true;
 			
@@ -539,8 +386,8 @@ public class Map implements Serializable
 				result = false;
 			}
 			
-			int txb = width / 2 - xy[0] - (cr[0] - c_min) * tile_w;
-			int tyb = height / 2 - xy[1] - (cr[1] - r_min) * tile_h;
+			int txb = viewport.width / 2 - xy[0] - (cr[0] - c_min) * tile_w;
+			int tyb = viewport.height / 2 - xy[1] - (cr[1] - r_min) * tile_h;
 
 			for (int i = r_min; i < r_max; i++)
 			{
@@ -572,7 +419,7 @@ public class Map implements Serializable
 			if (drawBorder)
 				c.drawPath(clipPath, borderPaint);
 			if (result)
-				result = coversScreen(map_xy, width, height);
+				result = coversScreen(map_xy, viewport.width, viewport.height);
 			return result;
 		}
 		catch (OutOfMemoryError err)
@@ -842,9 +689,10 @@ public class Map implements Serializable
 		}
 	}
 
+	@Override
 	public List<String> info()
 	{
-		ArrayList<String> info = new ArrayList<String>();
+		ArrayList<String> info = new ArrayList<>();
 		
 		info.add("title: " + title);
 		if (projection != null)
@@ -923,11 +771,5 @@ public class Map implements Serializable
 		}
 		
 		return info;
-	}
-	
-	@Override
-	public int hashCode()
-	{
-		return id;
 	}
 }
