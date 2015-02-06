@@ -50,8 +50,7 @@ public abstract class BaseMap implements Serializable
 
 	protected boolean isActive = false;
 
-	protected transient double zoom = 1.;
-	protected transient double savedZoom = 0.;
+	protected double zoom = 1.;
 
 	protected transient Bounds bounds;
 	protected transient Path mapClipPath;
@@ -70,7 +69,17 @@ public abstract class BaseMap implements Serializable
 		this.id = path.hashCode();
 	}
 
-	public synchronized void activate(OnMapTileStateChangeListener listener, DisplayMetrics metrics, double zoom) throws Throwable
+	/**
+	 * Called after map object is created.
+	 */
+	public abstract void initialize();
+
+	/**
+	 * Called before map removal.
+	 */
+	public abstract void destroy();
+
+	public synchronized void activate(OnMapTileStateChangeListener listener, DisplayMetrics metrics) throws Throwable
 	{
 		this.listener = listener;
 		displayWidth = metrics.widthPixels;
@@ -85,18 +94,7 @@ public abstract class BaseMap implements Serializable
 
 		mapClipPath = new Path();
 
-		if (zoom != 1.)
-		{
-			if (savedZoom == 0.)
-				savedZoom = this.zoom;
-			this.zoom = zoom;
-		}
-		else if (savedZoom != 0.)
-		{
-			this.zoom = savedZoom;
-			savedZoom = 0.;
-		}
-		setZoom(this.zoom);
+		setZoom(zoom);
 
 		isActive = true;
 	}
@@ -104,10 +102,6 @@ public abstract class BaseMap implements Serializable
 	public synchronized void deactivate()
 	{
 		isActive = false;
-
-		if (savedZoom != 0.)
-			zoom = savedZoom;
-		savedZoom = 0.;
 
 		if (cache != null)
 			cache.destroy();
@@ -150,6 +144,35 @@ public abstract class BaseMap implements Serializable
 	 * @return true if coordinates are inside map
 	 */
 	public boolean coversLatLon(double lat, double lon)
+	{
+		//  Note that division by zero is avoided because the division is protected
+		//  by the "if" clause which surrounds it.
+
+		int j = cornerMarkers.length - 1;
+		int odd = 0;
+
+		for (int i=0; i < cornerMarkers.length; i++)
+		{
+			if (cornerMarkers[i].lon < lon && cornerMarkers[j].lon >= lon || cornerMarkers[j].lon < lon && cornerMarkers[i].lon >= lon)
+			{
+				if (cornerMarkers[i].lat + (lon - cornerMarkers[i].lon) / (cornerMarkers[j].lon - cornerMarkers[i].lon) * (cornerMarkers[j].lat - cornerMarkers[i].lat) < lat)
+				{
+					odd++;
+				}
+			}
+			j=i;
+		}
+
+		return odd % 2 == 1;
+	}
+
+	/**
+	 * Checks if map covers given coordinates
+	 * @param lat latitude in degrees
+	 * @param lon longitude in degrees
+	 * @return true if coordinates are inside map
+	 */
+	public boolean coversLatLonByXY(double lat, double lon)
 	{
 		int[] xy = new int[2];
 		boolean inside;
@@ -207,7 +230,7 @@ public abstract class BaseMap implements Serializable
 	public abstract void getMapCenter(double[] center);
 	public abstract double getMPP();
 
-	public final double getAbsoluteMPP()
+	public double getAbsoluteMPP()
 	{
 		return mpp;
 	}
@@ -222,16 +245,7 @@ public abstract class BaseMap implements Serializable
 		setZoom(zoom * factor);
 	}
 
-	public final void setTemporaryZoom(double zoom)
-	{
-		if (savedZoom == 0.)
-			savedZoom = this.zoom;
-		setZoom(zoom);
-	}
-
 	public abstract boolean drawMap(Viewport viewport, boolean cropBorder, boolean drawBorder, Canvas c) throws OutOfMemoryError;
-
-	public abstract void recalculateCache();
 
 	public abstract List<String> info();
 

@@ -46,6 +46,7 @@ public abstract class TileMap extends BaseMap
 	public boolean ellipsoid = false;
 
 	protected transient double lastLatitude;
+	private transient double defMPP;
 	private transient static double prescaleFactor = 1.;
 
 	public TileMap(String path)
@@ -168,7 +169,6 @@ public abstract class TileMap extends BaseMap
 		return true;
 	}
 
-	@SuppressWarnings("UnusedDeclaration")
 	public boolean getTileXYByLatLon(double lat, double lon, int[] xy)
 	{
 		double n = Math.pow(2.0, srcZoom);
@@ -205,6 +205,12 @@ public abstract class TileMap extends BaseMap
 	}
 
 	@Override
+	public double getAbsoluteMPP()
+	{
+		return defMPP;
+	}
+
+	@Override
 	public double getNextZoom()
 	{
 		int z = defZoom + (int) (Math.log(zoom) / Math.log(2));
@@ -237,7 +243,7 @@ public abstract class TileMap extends BaseMap
 	@Override
 	public synchronized void setZoom(double z)
 	{
-		int zDiff = (int) (Math.log(z) / Math.log(2));
+		int zDiff = (int) Math.round(Math.log(z) / Math.log(2));
 		Log.e("TileMap", "Zoom: " + z + " diff: " + zDiff);
 
 		srcZoom = (byte) (defZoom + zDiff);
@@ -295,6 +301,7 @@ public abstract class TileMap extends BaseMap
 	     * (0.3% maximum error)
 	     */
 		mpp = prescaleFactor * projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(Math.toRadians(lastLatitude)) / Math.pow(2.0, (srcZoom + 8));
+		defMPP = prescaleFactor * projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(Math.toRadians(lastLatitude)) / Math.pow(2.0, (defZoom + 8));
 	}
 
 	@Override
@@ -397,7 +404,6 @@ public abstract class TileMap extends BaseMap
 		return result;
 	}
 
-	@Override
 	public void recalculateCache()
 	{
 		TileRAMCache oldCache = cache;

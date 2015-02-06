@@ -20,13 +20,13 @@
 
 package com.androzic.map.sas;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.graphics.Bitmap;
 
 import com.androzic.map.Tile;
 import com.androzic.map.TileMap;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SASMap extends TileMap
 {
@@ -44,6 +44,16 @@ public class SASMap extends TileMap
 		initializeZooms((byte) zmin, (byte) zmax, (byte) zmax);
 		updateTitle();
 		recalculateMPP();
+	}
+
+	@Override
+	public void initialize()
+	{
+	}
+
+	@Override
+	public void destroy()
+	{
 	}
 
 	@Override
@@ -80,7 +90,7 @@ public class SASMap extends TileMap
 			return null;
 		}
 	}
-	
+
 	@Override
 	public List<String> info()
 	{

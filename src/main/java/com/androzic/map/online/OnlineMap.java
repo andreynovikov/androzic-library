@@ -36,26 +36,32 @@ public class OnlineMap extends TileMap
 	private static final long serialVersionUID = 3L;
 	
 	public TileProvider tileProvider;
-	private TileController tileController;
+	private transient TileController tileController;
 
 	public OnlineMap(TileProvider provider, byte z)
 	{
 		super("http://... [" + provider.code + "]");
 
 	    tileProvider = provider;
-	    tileController = new TileController(tileProvider);
+		srcZoom = z;
+	}
 
-		if (z < tileProvider.minZoom)
-			z = tileProvider.minZoom;
-		if (z > tileProvider.maxZoom)
-			z = tileProvider.maxZoom;
+	@Override
+	public void initialize()
+	{
+		tileController = new TileController(tileProvider);
+
+		if (srcZoom < tileProvider.minZoom)
+			srcZoom = tileProvider.minZoom;
+		if (srcZoom > tileProvider.maxZoom)
+			srcZoom = tileProvider.maxZoom;
 
 		name = tileProvider.name;
 		ellipsoid = tileProvider.ellipsoid;
 		minZoom = tileProvider.minZoom;
 		maxZoom = tileProvider.maxZoom;
 
-		initializeZooms(tileProvider.minZoom, tileProvider.maxZoom, z);
+		initializeZooms(tileProvider.minZoom, tileProvider.maxZoom, srcZoom);
 
 		Bounds bounds = new Bounds();
 		bounds.minLat = -85.047336;
@@ -85,10 +91,15 @@ public class OnlineMap extends TileMap
 	}
 
 	@Override
-	public synchronized void activate(OnMapTileStateChangeListener listener, DisplayMetrics metrics, double zoom) throws Throwable
+	public void destroy()
+	{
+	}
+
+	@Override
+	public synchronized void activate(OnMapTileStateChangeListener listener, DisplayMetrics metrics) throws Throwable
 	{
 		tileProvider.activate();
-		super.activate(listener, metrics, zoom);
+		super.activate(listener, metrics);
 	}
 	
 	@Override

@@ -22,7 +22,6 @@ package com.androzic.map;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,16 +68,30 @@ public class Map extends BaseMap
 	public Grid llGrid;
 	public Grid grGrid;
 	protected ArrayList<MapPoint> calibrationPoints = new ArrayList<>();
-	private LinearBinding binding = new LinearBinding();
+	private transient LinearBinding binding;
 	private transient OzfReader ozf;
 
 	public Map(String path)
 	{
 		super(path);
+		binding = new LinearBinding();
 	}
 
 	@Override
-	public synchronized void activate(OnMapTileStateChangeListener listener, DisplayMetrics metrics, double zoom) throws Throwable
+	public void initialize()
+	{
+		// We do it twice because of deserialization
+		binding = new LinearBinding();
+		bind();
+	}
+
+	@Override
+	public void destroy()
+	{
+	}
+
+	@Override
+	public synchronized void activate(OnMapTileStateChangeListener listener, DisplayMetrics metrics) throws Throwable
 	{
 		Log.d("OZI", "Image file specified: " + imagePath);
 		File image = new File(imagePath);
@@ -95,7 +108,7 @@ public class Map extends BaseMap
 		}
 		Log.d("OZI", "Image file found: " + image.getCanonicalPath());
 		ozf = new OzfReader(image);
-		super.activate(listener, metrics, zoom);
+		super.activate(listener, metrics);
 	}
 
 	@Override
@@ -106,7 +119,6 @@ public class Map extends BaseMap
 		if (ozf != null)
 			ozf.close();
 		ozf = null;
-		bind(); // We need this if map was temporary zoomed
 	}
 	
 	public void addCalibrationPoint(MapPoint point)
@@ -241,7 +253,6 @@ public class Map extends BaseMap
 		return mpp / getZoom();
 	}
 
-	@Override
 	public void recalculateCache()
 	{
 		if (cache != null)
@@ -669,10 +680,8 @@ public class Map extends BaseMap
 		a[2][2] = size;
 	}
 	
-	private static class LinearBinding implements Serializable
+	private static class LinearBinding
 	{
-		private static final long serialVersionUID = 1L;
-		
 		double[] Kx = new double[3];
 		double[] Ky = new double[3];
 		double[] Klat = new double[3];
