@@ -61,7 +61,7 @@ public class MultiSelectListPreference extends ListPreference {
 
 	// boring stuff
 
-	private static final String SEP = "|";
+	public static final String SEP = "|";
 
 	private boolean[] checkedEntryIndexes;
 

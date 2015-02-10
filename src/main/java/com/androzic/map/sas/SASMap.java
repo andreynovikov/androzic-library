@@ -43,7 +43,6 @@ public class SASMap extends TileMap
 
 		initializeZooms((byte) zmin, (byte) zmax, (byte) zmax);
 		updateTitle();
-		recalculateMPP();
 	}
 
 	@Override

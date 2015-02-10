@@ -64,6 +64,7 @@ public abstract class TileMap extends BaseMap
 		defZoom = 14;
 
 		lastLatitude = 0.;
+		recalculateMPP();
 	}
 
 	protected void initializeZooms(byte min, byte max, byte def)
@@ -72,6 +73,7 @@ public abstract class TileMap extends BaseMap
 		maxZoom = max;
 		srcZoom = def;
 		defZoom = def;
+		recalculateMPP();
 	}
 
 	public static void setPrescaleFactor(int factor)
@@ -264,7 +266,6 @@ public abstract class TileMap extends BaseMap
 		if (Math.abs(dynZoom - 1) < 0.0078125)
 			dynZoom = 1.0;
 		Log.e("TileMap", "z: " + srcZoom + " diff: " + zDiff + " zoom: " + zoom + " dymZoom: " + dynZoom);
-		mpp = projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(Math.toRadians(0.)) / Math.pow(2.0, (srcZoom + 8));
 
 		recalculateCache();
 		updateTitle();

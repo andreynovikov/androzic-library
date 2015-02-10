@@ -87,7 +87,6 @@ public class OnlineMap extends TileMap
 		}
 
 		updateTitle();
-		recalculateMPP();
 	}
 
 	@Override
@@ -96,10 +95,10 @@ public class OnlineMap extends TileMap
 	}
 
 	@Override
-	public synchronized void activate(OnMapTileStateChangeListener listener, DisplayMetrics metrics) throws Throwable
+	public synchronized void activate(OnMapTileStateChangeListener listener, DisplayMetrics metrics, double mpp) throws Throwable
 	{
 		tileProvider.activate();
-		super.activate(listener, metrics);
+		super.activate(listener, metrics, mpp);
 	}
 	
 	@Override

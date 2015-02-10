@@ -79,7 +79,7 @@ public abstract class BaseMap implements Serializable
 	 */
 	public abstract void destroy();
 
-	public synchronized void activate(OnMapTileStateChangeListener listener, DisplayMetrics metrics) throws Throwable
+	public synchronized void activate(OnMapTileStateChangeListener listener, DisplayMetrics metrics, double mpp) throws Throwable
 	{
 		this.listener = listener;
 		displayWidth = metrics.widthPixels;
@@ -94,7 +94,8 @@ public abstract class BaseMap implements Serializable
 
 		mapClipPath = new Path();
 
-		setZoom(zoom);
+		// We do not use zoomTo() to overpass same mpp check
+		setZoom(getAbsoluteMPP() / mpp);
 
 		isActive = true;
 	}
@@ -228,8 +229,15 @@ public abstract class BaseMap implements Serializable
 	public abstract boolean getLatLonByXY(int x, int y, double[] ll);
 	public abstract boolean getXYByLatLon(double lat, double lon, int[] xy);
 	public abstract void getMapCenter(double[] center);
+
+	/**
+	 * Returns current mpp with respect to zoom
+	 */
 	public abstract double getMPP();
 
+	/**
+	 * Returns default (maximum) mpp
+	 */
 	public double getAbsoluteMPP()
 	{
 		return mpp;
@@ -239,6 +247,13 @@ public abstract class BaseMap implements Serializable
 	public abstract double getPrevZoom();
 	public abstract double getZoom();
 	public abstract void setZoom(double z);
+
+	public final void zoomTo(double mpp)
+	{
+		if (mpp == getMPP())
+			return;
+		setZoom(getAbsoluteMPP() / mpp);
+	}
 
 	public final void zoomBy(double factor)
 	{
