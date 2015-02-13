@@ -171,13 +171,12 @@ public abstract class TileMap extends BaseMap
 		return true;
 	}
 
-	public boolean getTileXYByLatLon(double lat, double lon, int[] xy)
+	public void getTileXYByLatLon(double lat, double lon, int[] xy)
 	{
 		double n = Math.pow(2.0, srcZoom);
 
-		xy[0] = (int) Math.floor((lon + 180) / 360 * n);
-		if (xy[0] == n)
-			xy[0] -= 1;
+		xy[0] = (int) Math.floor((lon + 180) / 360 * n) ;
+
 		if (ellipsoid)
 		{
 			double z = Math.sin(Math.toRadians(lat));
@@ -187,9 +186,15 @@ public abstract class TileMap extends BaseMap
 		{
 			xy[1] = (int) Math.floor((1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2 * n);
 		}
+
+		if (xy[0] < 0)
+			xy[0] = 0;
+		if (xy[0] >= n)
+			xy[0] = (int) n - 1;
 		if (xy[1] < 0)
 			xy[1] = 0;
-		return true;
+		if (xy[1] >= n)
+			xy[1] = (int) n - 1;
 	}
 
 	@Override
@@ -216,7 +221,7 @@ public abstract class TileMap extends BaseMap
 	public double getNextZoom()
 	{
 		int z = defZoom + (int) (Math.log(zoom) / Math.log(2));
-		if (z - maxZoom > 1)
+		if (z - maxZoom > 0)
 			return 0.0;
 		else if (z < minZoom || z > maxZoom)
 			return zoom * 2;
@@ -228,7 +233,7 @@ public abstract class TileMap extends BaseMap
 	public double getPrevZoom()
 	{
 		int z = defZoom + (int) (Math.log(zoom) / Math.log(2));
-		if (z - minZoom < -1)
+		if (z == 0 || z - minZoom < -1)
 			return 0.0;
 		else if (z < minZoom || z > maxZoom)
 			return zoom / 2;
