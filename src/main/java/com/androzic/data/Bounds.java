@@ -52,6 +52,18 @@ public class Bounds
 			maxLon = longitude;
 	}
 
+	public void fix()
+	{
+		if (minLat < -90d)
+			minLat = -90d;
+		if (maxLat > 90d)
+			maxLat = 90d;
+		if (minLon < -180d)
+			minLon = -180d;
+		if (maxLon > 180d)
+			maxLon = 180d;
+	}
+
 	public boolean intersects(Bounds area)
 	{
         return intersects(this, area);
