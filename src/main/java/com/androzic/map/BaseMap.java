@@ -243,6 +243,8 @@ public abstract class BaseMap implements Serializable
 		return mpp;
 	}
 
+	public abstract double getCoveringRatio(double refMpp);
+
 	public abstract double getNextZoom();
 	public abstract double getPrevZoom();
 	public abstract double getZoom();

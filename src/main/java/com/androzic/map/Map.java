@@ -253,6 +253,12 @@ public class Map extends BaseMap
 		return mpp / getZoom();
 	}
 
+	@Override
+	public double getCoveringRatio(double refMpp)
+	{
+		return refMpp / mpp;
+	}
+
 	public void recalculateCache()
 	{
 		if (cache != null)

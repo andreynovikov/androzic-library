@@ -218,6 +218,21 @@ public abstract class TileMap extends BaseMap
 	}
 
 	@Override
+	public double getCoveringRatio(double refMpp)
+	{
+		double zMpp;
+		for (int z = maxZoom; z > minZoom; z--)
+		{
+			zMpp = prescaleFactor * projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(Math.toRadians(lastLatitude)) / Math.pow(2.0, (z + 8));
+			double ratio = refMpp / zMpp;
+			if (ratio <= 5d)
+				return ratio;
+		}
+		zMpp = prescaleFactor * projection.getEllipsoid().equatorRadius * Math.PI * 2 * Math.cos(Math.toRadians(lastLatitude)) / Math.pow(2.0, (minZoom + 8));
+		return refMpp / zMpp;
+	}
+
+	@Override
 	public double getNextZoom()
 	{
 		int z = defZoom + (int) (Math.log(zoom) / Math.log(2));
