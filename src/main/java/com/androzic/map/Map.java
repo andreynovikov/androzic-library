@@ -29,7 +29,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Path;
 import android.graphics.Rect;
-import android.util.DisplayMetrics;
 
 import com.androzic.Log;
 import com.androzic.ui.Viewport;
@@ -91,7 +90,7 @@ public class Map extends BaseMap
 	}
 
 	@Override
-	public synchronized void activate(OnMapTileStateChangeListener listener, DisplayMetrics metrics, double mpp) throws Throwable
+	public synchronized void activate(OnMapTileStateChangeListener listener, Viewport viewport, double mpp) throws Throwable
 	{
 		Log.d("OZI", "Image file specified: " + imagePath);
 		File image = new File(imagePath);
@@ -108,7 +107,7 @@ public class Map extends BaseMap
 		}
 		Log.d("OZI", "Image file found: " + image.getCanonicalPath());
 		ozf = new OzfReader(image);
-		super.activate(listener, metrics, mpp);
+		super.activate(listener, viewport, mpp);
 	}
 
 	@Override
@@ -263,8 +262,8 @@ public class Map extends BaseMap
 	{
 		if (cache != null)
 			cache.destroy();
-		int nx = (int) Math.ceil(displayWidth * 1. / ozf.tile_dx()) + 2;
-		int ny = (int) Math.ceil(displayHeight * 1. / ozf.tile_dy()) + 2;
+		int nx = (int) Math.ceil(viewport.width * 1. / ozf.tile_dx()) + 2;
+		int ny = (int) Math.ceil(viewport.height * 1. / ozf.tile_dy()) + 2;
 		if (nx > ozf.tiles_per_x())
 			nx = ozf.tiles_per_x();
 		if (ny > ozf.tiles_per_y())

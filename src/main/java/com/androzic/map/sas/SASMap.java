@@ -75,7 +75,7 @@ public class SASMap extends TileMap
 				{
 					if (dynZoom != 1.0)
 					{
-				        int ss = (int) (dynZoom * TILE_SIZE);
+				        int ss = (int) (dynZoom * tileSize);
 						tile.bitmap = Bitmap.createScaledBitmap(tile.bitmap, ss, ss, true);
 					}
 					cache.put(tile.getKey(), tile);

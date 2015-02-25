@@ -31,10 +31,9 @@ import com.jhlabs.map.proj.ProjectionFactory;
 
 public abstract class TileMap extends BaseMap
 {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
-	public static final int ORIG_TILE_SIZE = 256;
-	public static int TILE_SIZE = 256;
+	public static final int TILE_SIZE = 256;
 
 	protected byte srcZoom;
 	protected byte defZoom;
@@ -45,9 +44,11 @@ public abstract class TileMap extends BaseMap
 	public byte maxZoom = 18;
 	public boolean ellipsoid = false;
 
+	protected int tileSize = 256;
+	private double prescaleFactor = 1.;
+
 	protected transient double lastLatitude;
 	private transient double defMPP;
-	private transient static double prescaleFactor = 1.;
 
 	public TileMap(String path)
 	{
@@ -76,9 +77,9 @@ public abstract class TileMap extends BaseMap
 		recalculateMPP();
 	}
 
-	public static void setPrescaleFactor(int factor)
+	public void setPrescaleFactor(int factor)
 	{
-		TILE_SIZE = ORIG_TILE_SIZE * factor;
+		tileSize = TILE_SIZE * factor;
 		prescaleFactor = 1. / factor;
 	}
 
@@ -96,13 +97,13 @@ public abstract class TileMap extends BaseMap
 	@Override
 	public int getScaledWidth()
 	{
-		return (int) (Math.pow(2.0, srcZoom) * TILE_SIZE * zoom);
+		return (int) (Math.pow(2.0, srcZoom) * tileSize * zoom);
 	}
 
 	@Override
 	public int getScaledHeight()
 	{
-		return (int) (Math.pow(2.0, srcZoom) * TILE_SIZE * zoom);
+		return (int) (Math.pow(2.0, srcZoom) * tileSize * zoom);
 	}
 
 	/**
@@ -121,25 +122,25 @@ public abstract class TileMap extends BaseMap
 	{
 		int map_x = (int) (x * 1. / dynZoom);
 		int map_y = (int) (y * 1. / dynZoom);
-		double dx = map_x * 1. / TILE_SIZE;
-		double dy = map_y * 1. / TILE_SIZE;
+		double dx = map_x * 1. / tileSize;
+		double dy = map_y * 1. / tileSize;
 
 		double n = Math.pow(2.0, srcZoom);
 		if (ellipsoid)
 		{
-			ll[0] = (map_y - TILE_SIZE * n / 2) / -(TILE_SIZE * n / (2 * Math.PI));
+			ll[0] = (map_y - tileSize * n / 2) / -(tileSize * n / (2 * Math.PI));
 			ll[0] = (2 * Math.atan(Math.exp(ll[0])) - Math.PI / 2) * 180 / Math.PI;
 
 			double Zu = Math.toRadians(ll[0]);
 			double Zum1 = Zu + 1;
-			double yy = (map_y - TILE_SIZE * n / 2);
+			double yy = (map_y - tileSize * n / 2);
 			int i = 100000;
 			while ((Math.abs(Zum1 - Zu) > 0.0000001) && (i != 0))
 			{
 				i--;
 				Zum1 = Zu;
 				Zu = Math.asin(1 - ((1 + Math.sin(Zum1)) * Math.pow(1 - 0.0818197 * Math.sin(Zum1), 0.0818197))
-						/ (Math.exp((2 * yy) / -(TILE_SIZE * n / (2 * Math.PI))) * Math.pow(1 + 0.0818197 * Math.sin(Zum1), 0.0818197)));
+						/ (Math.exp((2 * yy) / -(tileSize * n / (2 * Math.PI))) * Math.pow(1 + 0.0818197 * Math.sin(Zum1), 0.0818197)));
 			}
 			ll[0] = Math.toDegrees(Zu);
 		}
@@ -157,16 +158,16 @@ public abstract class TileMap extends BaseMap
 	{
 		double n = Math.pow(2.0, srcZoom);
 
-		xy[0] = (int) Math.floor((lon + 180.0) / 360.0 * n * TILE_SIZE * dynZoom);
+		xy[0] = (int) Math.floor((lon + 180.0) / 360.0 * n * tileSize * dynZoom);
 
 		if (ellipsoid)
 		{
 			double z = Math.sin(Math.toRadians(lat));
-			xy[1] = (int) Math.floor((1 - (atanh(z) - 0.0818197 * atanh(0.0818197 * z)) / Math.PI) / 2 * n * TILE_SIZE * dynZoom);
+			xy[1] = (int) Math.floor((1 - (atanh(z) - 0.0818197 * atanh(0.0818197 * z)) / Math.PI) / 2 * n * tileSize * dynZoom);
 		}
 		else
 		{
-			xy[1] = (int) Math.floor((1 - (Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI)) / 2 * n * TILE_SIZE * dynZoom);
+			xy[1] = (int) Math.floor((1 - (Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI)) / 2 * n * tileSize * dynZoom);
 		}
 		return true;
 	}
@@ -344,7 +345,7 @@ public abstract class TileMap extends BaseMap
 		if (cropBorder || drawBorder)
 			mapClipPath.offset(-map_xy[0] + viewport.width / 2, -map_xy[1] + viewport.height / 2, clipPath);
 
-		float tile_wh = (float) (TILE_SIZE * dynZoom);
+		float tile_wh = (float) (tileSize * dynZoom);
 
 		int osm_x = (int) (map_xy[0] / tile_wh);
 		int osm_y = (int) (map_xy[1] / tile_wh);
@@ -428,8 +429,8 @@ public abstract class TileMap extends BaseMap
 	public void recalculateCache()
 	{
 		TileRAMCache oldCache = cache;
-		int nx = (int) Math.ceil(displayWidth * 1. / (TILE_SIZE * dynZoom)) + 2;
-		int ny = (int) Math.ceil(displayHeight * 1. / (TILE_SIZE * dynZoom)) + 2;
+		int nx = (int) Math.ceil(viewport.width * 1. / (tileSize * dynZoom)) + 2;
+		int ny = (int) Math.ceil(viewport.height * 1. / (tileSize * dynZoom)) + 2;
 		int cacheSize = nx * ny;
 		Log.e("TileMap", "Cache size: " + cacheSize);
 		cache = new TileRAMCache(cacheSize);

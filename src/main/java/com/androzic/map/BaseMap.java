@@ -24,7 +24,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.util.DisplayMetrics;
 
 import com.androzic.data.Bounds;
 import com.androzic.ui.Viewport;
@@ -57,9 +56,7 @@ public abstract class BaseMap implements Serializable
 	protected transient Paint borderPaint;
 	protected transient OnMapTileStateChangeListener listener;
 	protected transient TileRAMCache cache;
-
-	protected transient int displayWidth;
-	protected transient int displayHeight;
+	protected transient Viewport viewport;
 
 	public transient Throwable loadError;
 
@@ -79,11 +76,10 @@ public abstract class BaseMap implements Serializable
 	 */
 	public abstract void destroy();
 
-	public synchronized void activate(OnMapTileStateChangeListener listener, DisplayMetrics metrics, double mpp) throws Throwable
+	public synchronized void activate(OnMapTileStateChangeListener listener, Viewport viewport, double mpp) throws Throwable
 	{
 		this.listener = listener;
-		displayWidth = metrics.widthPixels;
-		displayHeight = metrics.heightPixels;
+		this.viewport = viewport;
 
 		borderPaint = new Paint();
 		borderPaint.setAntiAlias(true);
@@ -109,6 +105,7 @@ public abstract class BaseMap implements Serializable
 		cache = null;
 
 		listener = null;
+		viewport = null;
 		borderPaint = null;
 		mapClipPath = null;
 	}

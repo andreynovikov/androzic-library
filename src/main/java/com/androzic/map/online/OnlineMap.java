@@ -24,12 +24,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.graphics.Bitmap;
-import android.util.DisplayMetrics;
 
 import com.androzic.data.Bounds;
 import com.androzic.map.OnMapTileStateChangeListener;
 import com.androzic.map.Tile;
 import com.androzic.map.TileMap;
+import com.androzic.ui.Viewport;
 
 public class OnlineMap extends TileMap
 {
@@ -95,10 +95,10 @@ public class OnlineMap extends TileMap
 	}
 
 	@Override
-	public synchronized void activate(OnMapTileStateChangeListener listener, DisplayMetrics metrics, double mpp) throws Throwable
+	public synchronized void activate(OnMapTileStateChangeListener listener, Viewport viewport, double mpp) throws Throwable
 	{
 		tileProvider.activate();
-		super.activate(listener, metrics, mpp);
+		super.activate(listener, viewport, mpp);
 	}
 	
 	@Override
@@ -125,7 +125,7 @@ public class OnlineMap extends TileMap
 		{
 			if (dynZoom != 1.0)
 			{
-		        int ss = (int) (dynZoom * TILE_SIZE);
+		        int ss = (int) (dynZoom * tileSize);
 				tile.bitmap = Bitmap.createScaledBitmap(tile.bitmap, ss, ss, true);
 			}
 		}
