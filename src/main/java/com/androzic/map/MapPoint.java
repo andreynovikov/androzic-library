@@ -24,18 +24,18 @@ import java.io.Serializable;
 
 public class MapPoint implements Serializable
 {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	public int x;
 	public int y;
 
 	public double lat;
 	public double lon;
-	
-	int zone;
-	double n;
-	double e;
-	int hemisphere;
+
+	public int zone;
+	public double n;
+	public double e;
+	public int hemisphere;
 
 	public MapPoint()
 	{

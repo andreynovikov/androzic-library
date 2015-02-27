@@ -95,7 +95,7 @@ public class TileRAMCache
 	/**
 	 * Clear the cache.
 	 */
-	synchronized void clear()
+	public synchronized void clear()
 	{
 		if (map != null)
 		{

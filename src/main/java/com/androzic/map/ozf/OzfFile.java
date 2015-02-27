@@ -18,7 +18,7 @@
  * along with Androzic.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.androzic.map;
+package com.androzic.map.ozf;
 
 import java.io.File;
 import java.io.RandomAccessFile;

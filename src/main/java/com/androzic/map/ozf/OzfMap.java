@@ -18,7 +18,7 @@
  * along with Androzic.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.androzic.map;
+package com.androzic.map.ozf;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,10 +31,14 @@ import android.graphics.Path;
 import android.graphics.Rect;
 
 import com.androzic.Log;
+import com.androzic.map.BaseMap;
+import com.androzic.map.MapPoint;
+import com.androzic.map.OnMapTileStateChangeListener;
+import com.androzic.map.TileRAMCache;
 import com.androzic.ui.Viewport;
 import com.jhlabs.Point2D;
 
-public class Map extends BaseMap
+public class OzfMap extends BaseMap
 {
 	private static final long serialVersionUID = 10L;
 
@@ -66,11 +70,11 @@ public class Map extends BaseMap
 	public String prjName;
 	public Grid llGrid;
 	public Grid grGrid;
-	protected ArrayList<MapPoint> calibrationPoints = new ArrayList<>();
+	public ArrayList<MapPoint> calibrationPoints = new ArrayList<>();
 	private transient LinearBinding binding;
 	private transient OzfReader ozf;
 
-	public Map(String path)
+	public OzfMap(String path)
 	{
 		super(path);
 		binding = new LinearBinding();

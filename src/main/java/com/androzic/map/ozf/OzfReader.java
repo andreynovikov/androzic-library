@@ -18,7 +18,7 @@
  * along with Androzic.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.androzic.map;
+package com.androzic.map.ozf;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +26,8 @@ import java.io.IOException;
 import android.graphics.Bitmap;
 
 import com.androzic.Log;
+import com.androzic.map.Tile;
+import com.androzic.map.TileRAMCache;
 
 public class OzfReader
 {
