@@ -56,7 +56,8 @@ public abstract class BaseMap implements Serializable
 	protected transient Paint borderPaint;
 	protected transient OnMapTileStateChangeListener listener;
 	protected transient TileRAMCache cache;
-	protected transient Viewport viewport;
+	protected transient int width;
+	protected transient int height;
 
 	public transient Throwable loadError;
 
@@ -76,10 +77,11 @@ public abstract class BaseMap implements Serializable
 	 */
 	public abstract void destroy();
 
-	public synchronized void activate(OnMapTileStateChangeListener listener, Viewport viewport, double mpp) throws Throwable
+	public synchronized void activate(OnMapTileStateChangeListener listener, int width, int height, double mpp) throws Throwable
 	{
 		this.listener = listener;
-		this.viewport = viewport;
+		this.width = width;
+		this.height = height;
 
 		borderPaint = new Paint();
 		borderPaint.setAntiAlias(true);
@@ -105,7 +107,6 @@ public abstract class BaseMap implements Serializable
 		cache = null;
 
 		listener = null;
-		viewport = null;
 		borderPaint = null;
 		mapClipPath = null;
 	}

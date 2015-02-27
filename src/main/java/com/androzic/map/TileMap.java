@@ -429,8 +429,8 @@ public abstract class TileMap extends BaseMap
 	public void recalculateCache()
 	{
 		TileRAMCache oldCache = cache;
-		int nx = (int) Math.ceil(viewport.width * 1. / (tileSize * dynZoom)) + 2;
-		int ny = (int) Math.ceil(viewport.height * 1. / (tileSize * dynZoom)) + 2;
+		int nx = (int) Math.ceil(width * 1. / (tileSize * dynZoom)) + 2;
+		int ny = (int) Math.ceil(height * 1. / (tileSize * dynZoom)) + 2;
 		int cacheSize = nx * ny;
 		Log.e("TileMap", "Cache size: " + cacheSize);
 		cache = new TileRAMCache(cacheSize);

@@ -29,7 +29,6 @@ import com.androzic.data.Bounds;
 import com.androzic.map.OnMapTileStateChangeListener;
 import com.androzic.map.Tile;
 import com.androzic.map.TileMap;
-import com.androzic.ui.Viewport;
 
 public class OnlineMap extends TileMap
 {
@@ -95,10 +94,10 @@ public class OnlineMap extends TileMap
 	}
 
 	@Override
-	public synchronized void activate(OnMapTileStateChangeListener listener, Viewport viewport, double mpp) throws Throwable
+	public synchronized void activate(OnMapTileStateChangeListener listener, int width, int height, double mpp) throws Throwable
 	{
 		tileProvider.activate();
-		super.activate(listener, viewport, mpp);
+		super.activate(listener, width, height, mpp);
 	}
 	
 	@Override
