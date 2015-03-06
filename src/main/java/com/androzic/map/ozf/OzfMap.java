@@ -94,7 +94,7 @@ public class OzfMap extends BaseMap
 	}
 
 	@Override
-	public synchronized void activate(OnMapTileStateChangeListener listener, int width, int height, double mpp) throws Throwable
+	public synchronized void activate(OnMapTileStateChangeListener listener, int width, int height, double mpp, boolean current) throws Throwable
 	{
 		Log.d("OZI", "Image file specified: " + imagePath);
 		File image = new File(imagePath);
@@ -111,7 +111,7 @@ public class OzfMap extends BaseMap
 		}
 		Log.d("OZI", "Image file found: " + image.getCanonicalPath());
 		ozf = new OzfReader(image);
-		super.activate(listener, width, height, mpp);
+		super.activate(listener, width, height, mpp, current);
 	}
 
 	@Override

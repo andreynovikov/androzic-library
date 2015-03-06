@@ -94,10 +94,10 @@ public class OnlineMap extends TileMap
 	}
 
 	@Override
-	public synchronized void activate(OnMapTileStateChangeListener listener, int width, int height, double mpp) throws Throwable
+	public synchronized void activate(OnMapTileStateChangeListener listener, int width, int height, double mpp, boolean current) throws Throwable
 	{
 		tileProvider.activate();
-		super.activate(listener, width, height, mpp);
+		super.activate(listener, width, height, mpp, current);
 	}
 	
 	@Override

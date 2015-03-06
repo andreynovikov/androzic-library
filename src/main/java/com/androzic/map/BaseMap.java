@@ -48,6 +48,7 @@ public abstract class BaseMap implements Serializable
 	protected double mpp;
 
 	protected boolean isActive = false;
+	protected boolean isCurrent = false;
 
 	protected double zoom = 1.;
 
@@ -77,11 +78,12 @@ public abstract class BaseMap implements Serializable
 	 */
 	public abstract void destroy();
 
-	public synchronized void activate(OnMapTileStateChangeListener listener, int width, int height, double mpp) throws Throwable
+	public synchronized void activate(OnMapTileStateChangeListener listener, int width, int height, double mpp, boolean current) throws Throwable
 	{
 		this.listener = listener;
 		this.width = width;
 		this.height = height;
+		this.isCurrent = current;
 
 		borderPaint = new Paint();
 		borderPaint.setAntiAlias(true);
