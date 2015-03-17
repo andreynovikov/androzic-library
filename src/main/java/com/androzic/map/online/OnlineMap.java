@@ -139,6 +139,12 @@ public class OnlineMap extends TileMap
 	}
 
 	@Override
+	public int getPriority()
+	{
+		return 4;
+	}
+
+	@Override
 	public void recalculateCache()
 	{
 		super.recalculateCache();

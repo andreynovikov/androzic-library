@@ -56,6 +56,12 @@ public class SASMap extends TileMap
 	}
 
 	@Override
+	public int getPriority()
+	{
+		return 3;
+	}
+
+	@Override
 	public Bitmap getTile(int x, int y) throws OutOfMemoryError
 	{
 		try

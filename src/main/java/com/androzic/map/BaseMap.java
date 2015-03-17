@@ -264,6 +264,7 @@ public abstract class BaseMap implements Serializable
 
 	public abstract boolean drawMap(Viewport viewport, boolean cropBorder, boolean drawBorder, Canvas c) throws OutOfMemoryError;
 
+	public abstract int getPriority();
 	public abstract List<String> info();
 
 	@Override

@@ -449,6 +449,12 @@ public class OzfMap extends BaseMap
 		}
 	}
 
+	@Override
+	public int getPriority()
+	{
+		return 1;
+	}
+
 	public void bind()
 	{
 		MapPoint[] points = new MapPoint[calibrationPoints.size()];
