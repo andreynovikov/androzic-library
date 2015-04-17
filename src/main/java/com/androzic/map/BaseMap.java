@@ -243,6 +243,11 @@ public abstract class BaseMap implements Serializable
 		return mpp;
 	}
 
+	/**
+	 * Returns scale ratio with respect to reference map
+	 * @param refMpp reference map MPP
+	 * @return ratio, where 1d means equality, &gt;1d means larger (better) scale, &lt;1d means less scale
+	 */
 	public abstract double getCoveringRatio(double refMpp);
 
 	public abstract double getNextZoom();
