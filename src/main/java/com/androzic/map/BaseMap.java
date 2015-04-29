@@ -35,7 +35,7 @@ import java.util.List;
 
 public abstract class BaseMap implements Serializable
 {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	public int id;
 	public String path;
@@ -61,6 +61,10 @@ public abstract class BaseMap implements Serializable
 	protected transient int height;
 
 	public transient Throwable loadError;
+
+	protected BaseMap()
+	{
+	}
 
 	public BaseMap(String path)
 	{

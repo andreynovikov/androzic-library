@@ -40,7 +40,7 @@ import com.jhlabs.Point2D;
 
 public class OzfMap extends BaseMap
 {
-	private static final long serialVersionUID = 10L;
+	private static final long serialVersionUID = 11L;
 
 	private static final double[] zoomLevelsSupported =
 	{
@@ -73,6 +73,10 @@ public class OzfMap extends BaseMap
 	public ArrayList<MapPoint> calibrationPoints = new ArrayList<>();
 	private transient LinearBinding binding;
 	private transient OzfReader ozf;
+
+	protected OzfMap()
+	{
+	}
 
 	public OzfMap(String path)
 	{

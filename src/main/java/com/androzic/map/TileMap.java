@@ -50,6 +50,10 @@ public abstract class TileMap extends BaseMap
 	protected transient double lastLatitude;
 	private transient double defMPP;
 
+	protected TileMap()
+	{
+	}
+
 	public TileMap(String path)
 	{
 		super(path);
