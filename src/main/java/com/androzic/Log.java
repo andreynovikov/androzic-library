@@ -13,25 +13,25 @@ public final class Log
 
 	public static void d(String TAG, String msg)
 	{
-		if (logLevel >= android.util.Log.DEBUG)
+		if (logLevel <= android.util.Log.DEBUG)
 			log(android.util.Log.DEBUG, TAG, msg);
 	}
 
 	public static void i(String TAG, String msg)
 	{
-		if (logLevel >= android.util.Log.INFO)
+		if (logLevel <= android.util.Log.INFO)
 			log(android.util.Log.INFO, TAG, msg);
 	}
 
 	public static void w(String TAG, String msg)
 	{
-		if (logLevel >= android.util.Log.WARN)
+		if (logLevel <= android.util.Log.WARN)
 			log(android.util.Log.WARN, TAG, msg);
 	}
 
 	public static void e(String TAG, String msg)
 	{
-		if (logLevel >= android.util.Log.ERROR)
+		if (logLevel <= android.util.Log.ERROR)
 			log(android.util.Log.ERROR, TAG, msg);
 	}
 
