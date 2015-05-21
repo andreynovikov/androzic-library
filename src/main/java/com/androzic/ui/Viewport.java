@@ -35,6 +35,10 @@ public class Viewport
 	 */
 	public int[] mapCenterXY;
 	/**
+	 * Map rotation angle in degrees
+	 */
+	public float mapHeading;
+	/**
 	 * Current GPS location, if location is not available, coordinates are set to Double.NaN
 	 */
 	public double[] location;
@@ -62,12 +66,13 @@ public class Viewport
 	public int[] lookAheadXY;
 
 	public float bearing;
-	public float speed = 0;
+	public float speed = 0f;
 
 	public Viewport()
 	{
 		mapCenter = new double[2];
 		mapCenterXY = new int[2];
+		mapHeading = 0f;
 		location = new double[] {Double.NaN, Double.NaN};
 		locationXY = new int[2];
 
@@ -77,8 +82,8 @@ public class Viewport
 		viewArea = new Rect();
 		mapArea = new Bounds();
 
-		bearing = 0;
-		speed = 0;
+		bearing = 0f;
+		speed = 0f;
 
 		lookAheadXY = new int[] { 0, 0 };
 	}
@@ -90,6 +95,7 @@ public class Viewport
 		copy.mapCenter[1] = mapCenter[1];
 		copy.mapCenterXY[0] = mapCenterXY[0];
 		copy.mapCenterXY[1] = mapCenterXY[1];
+		copy.mapHeading = mapHeading;
 		copy.location[0] = location[0];
 		copy.location[1] = location[1];
 		copy.locationXY[0] = locationXY[0];
