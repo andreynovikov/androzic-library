@@ -43,6 +43,7 @@ public final class Log
 				android.util.Log.println(priority, TAG, getLocation() + msg);
 			case LOG_MODE_LIGHT:
 				android.util.Log.println(priority, TAG, msg);
+			case LOG_MODE_NONE:
 		}
 	}
 
@@ -53,10 +54,8 @@ public final class Log
 				.getStackTrace();
 		boolean found = false;
 
-		for (int i = 0; i < traces.length; i++)
+		for (StackTraceElement trace : traces)
 		{
-			StackTraceElement trace = traces[i];
-
 			try
 			{
 				if (found)
@@ -72,11 +71,11 @@ public final class Log
 				else if (trace.getClassName().startsWith(className))
 				{
 					found = true;
-					continue;
 				}
 			}
 			catch (ClassNotFoundException e)
 			{
+				//ignore
 			}
 		}
 

@@ -347,15 +347,15 @@ public abstract class TileMap extends BaseMap
 		Path clipPath = new Path();
 
 		if (cropBorder || drawBorder)
-			mapClipPath.offset(-map_xy[0] + viewport.width / 2, -map_xy[1] + viewport.height / 2, clipPath);
+			mapClipPath.offset(-map_xy[0] + viewport.canvasWidth / 2, -map_xy[1] + viewport.canvasHeight / 2, clipPath);
 
 		float tile_wh = (float) (tileSize * dynZoom);
 
 		int osm_x = (int) (map_xy[0] / tile_wh);
 		int osm_y = (int) (map_xy[1] / tile_wh);
 
-		int tiles_per_x = Math.round(viewport.width * 1.f / tile_wh / 2 + .5f);
-		int tiles_per_y = Math.round(viewport.height * 1.f / tile_wh / 2 + .5f);
+		int tiles_per_x = Math.round(viewport.canvasWidth * 1.f / tile_wh / 2 + .5f);
+		int tiles_per_y = Math.round(viewport.canvasHeight * 1.f / tile_wh / 2 + .5f);
 
 		int c_min = osm_x - tiles_per_x;
 		int c_max = osm_x + tiles_per_x + 1;
@@ -386,8 +386,8 @@ public abstract class TileMap extends BaseMap
 			result = false;
 		}
 
-		float w2mx = viewport.width / 2 - map_xy[0];
-		float h2my = viewport.height / 2 - map_xy[1];
+		float w2mx = viewport.canvasWidth / 2 - map_xy[0];
+		float h2my = viewport.canvasHeight / 2 - map_xy[1];
 		int twh = Math.round(tile_wh);
 
 		int i = osm_y, j = osm_x, dx = 0, dy = -1;
@@ -430,11 +430,12 @@ public abstract class TileMap extends BaseMap
 		return result;
 	}
 
-	public void recalculateCache()
+	@Override
+	public synchronized void recalculateCache()
 	{
 		TileRAMCache oldCache = cache;
-		int nx = (int) Math.ceil(width * 1. / (tileSize * dynZoom)) + 2;
-		int ny = (int) Math.ceil(height * 1. / (tileSize * dynZoom)) + 2;
+		int nx = (int) Math.ceil(viewportWidth * 1. / (tileSize * dynZoom)) + 2;
+		int ny = (int) Math.ceil(viewportHeight * 1. / (tileSize * dynZoom)) + 2;
 		int cacheSize = nx * ny;
 		Log.e("TileMap", "Cache size: " + cacheSize);
 		cache = new TileRAMCache(cacheSize);

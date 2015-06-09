@@ -98,7 +98,7 @@ public class OzfMap extends BaseMap
 	}
 
 	@Override
-	public synchronized void activate(OnMapTileStateChangeListener listener, int width, int height, double mpp, boolean current) throws Throwable
+	public synchronized void activate(OnMapTileStateChangeListener listener, double mpp, boolean current) throws Throwable
 	{
 		Log.d("OZI", "Image file specified: " + imagePath);
 		File image = new File(imagePath);
@@ -115,7 +115,7 @@ public class OzfMap extends BaseMap
 		}
 		Log.d("OZI", "Image file found: " + image.getCanonicalPath());
 		ozf = new OzfReader(image);
-		super.activate(listener, width, height, mpp, current);
+		super.activate(listener, mpp, current);
 	}
 
 	@Override
@@ -266,12 +266,13 @@ public class OzfMap extends BaseMap
 		return refMpp / mpp;
 	}
 
-	public void recalculateCache()
+	@Override
+	public synchronized void recalculateCache()
 	{
 		if (cache != null)
 			cache.destroy();
-		int nx = (int) Math.ceil(width * 1. / ozf.tile_dx()) + 2;
-		int ny = (int) Math.ceil(height * 1. / ozf.tile_dy()) + 2;
+		int nx = (int) Math.ceil(viewportWidth * 1. / ozf.tile_dx()) + 2;
+		int ny = (int) Math.ceil(viewportHeight * 1. / ozf.tile_dy()) + 2;
 		if (nx > ozf.tiles_per_x())
 			nx = ozf.tiles_per_x();
 		if (ny > ozf.tiles_per_y())
@@ -363,7 +364,7 @@ public class OzfMap extends BaseMap
 		{
 			Path clipPath = new Path();
 			if (cropBorder || drawBorder)
-				mapClipPath.offset(-map_xy[0] + viewport.width / 2, -map_xy[1] + viewport.height / 2, clipPath);
+				mapClipPath.offset(-map_xy[0] + viewport.canvasWidth / 2, -map_xy[1] + viewport.canvasHeight / 2, clipPath);
             c.save();
 			if (cropBorder)
 				c.clipPath(clipPath);
@@ -381,11 +382,11 @@ public class OzfMap extends BaseMap
 				return false;
 			}
 
-			int c_min = (int) Math.floor(ozf.map_x_to_c(map_xy[0] - viewport.width / 2));
-			int c_max = (int) Math.ceil(ozf.map_x_to_c(map_xy[0] + viewport.width / 2));
+			int c_min = (int) Math.floor(ozf.map_x_to_c(map_xy[0] - viewport.canvasWidth / 2));
+			int c_max = (int) Math.ceil(ozf.map_x_to_c(map_xy[0] + viewport.canvasWidth / 2));
 			
-			int r_min = (int) Math.floor(ozf.map_y_to_r(map_xy[1] - viewport.height / 2));
-			int r_max = (int) Math.ceil(ozf.map_y_to_r(map_xy[1] + viewport.height / 2));
+			int r_min = (int) Math.floor(ozf.map_y_to_r(map_xy[1] - viewport.canvasHeight / 2));
+			int r_max = (int) Math.ceil(ozf.map_y_to_r(map_xy[1] + viewport.canvasHeight / 2));
 			
 			boolean result = true;
 			
@@ -410,8 +411,8 @@ public class OzfMap extends BaseMap
 				result = false;
 			}
 			
-			int txb = viewport.width / 2 - xy[0] - (cr[0] - c_min) * tile_w;
-			int tyb = viewport.height / 2 - xy[1] - (cr[1] - r_min) * tile_h;
+			int txb = viewport.canvasWidth / 2 - xy[0] - (cr[0] - c_min) * tile_w;
+			int tyb = viewport.canvasHeight / 2 - xy[1] - (cr[1] - r_min) * tile_h;
 
 			for (int i = r_min; i < r_max; i++)
 			{
@@ -443,7 +444,7 @@ public class OzfMap extends BaseMap
 			if (drawBorder)
 				c.drawPath(clipPath, borderPaint);
 			if (result)
-				result = coversScreen(map_xy, viewport.width, viewport.height);
+				result = coversScreen(map_xy, viewport.canvasWidth, viewport.canvasHeight);
 			return result;
 		}
 		catch (OutOfMemoryError err)

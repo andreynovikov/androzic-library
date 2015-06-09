@@ -47,13 +47,21 @@ public class Viewport
 	 */
 	public int[] locationXY;
 	/**
-	 * Logical width of a map view
+	 * Physical width of a map view
 	 */
 	public int width;
 	/**
-	 * Logical height of a map view
+	 * Physical height of a map view
 	 */
 	public int height;
+	/**
+	 * Logical width of a map view
+	 */
+	public int canvasWidth;
+	/**
+	 * Logical height of a map view
+	 */
+	public int canvasHeight;
 	/**
 	 * The area of a map view that is not covered by UI elements
 	 */
@@ -78,6 +86,8 @@ public class Viewport
 
 		width = 0;
 		height = 0;
+		canvasWidth = 0;
+		canvasHeight = 0;
 
 		viewArea = new Rect();
 		mapArea = new Bounds();
@@ -102,6 +112,8 @@ public class Viewport
 		copy.locationXY[1] = locationXY[1];
 		copy.width = width;
 		copy.height = height;
+		copy.canvasWidth = canvasWidth;
+		copy.canvasHeight = canvasHeight;
 		copy.viewArea = new Rect(viewArea);
 		copy.mapArea = new Bounds(mapArea);
 		copy.bearing = bearing;

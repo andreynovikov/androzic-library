@@ -43,6 +43,9 @@ public abstract class BaseMap implements Serializable
 
 	public String datum;
 
+	public static transient int viewportWidth;
+	public static transient int viewportHeight;
+
 	protected Projection projection;
 	protected MapPoint[] cornerMarkers;
 	protected double mpp;
@@ -82,11 +85,9 @@ public abstract class BaseMap implements Serializable
 	 */
 	public abstract void destroy();
 
-	public synchronized void activate(OnMapTileStateChangeListener listener, int width, int height, double mpp, boolean current) throws Throwable
+	public synchronized void activate(OnMapTileStateChangeListener listener, double mpp, boolean current) throws Throwable
 	{
 		this.listener = listener;
-		this.width = width;
-		this.height = height;
 		this.isCurrent = current;
 
 		borderPaint = new Paint();
@@ -120,6 +121,10 @@ public abstract class BaseMap implements Serializable
 	public boolean activated()
 	{
 		return isActive;
+	}
+
+	public synchronized void recalculateCache()
+	{
 	}
 
 	public void setCornersAmount(int num)
