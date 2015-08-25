@@ -18,7 +18,7 @@
  * along with Androzic.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.androzic.map.sas;
+package com.androzic.map.rmaps;
 
 import android.graphics.Bitmap;
 
@@ -28,13 +28,13 @@ import com.androzic.map.TileMap;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SASMap extends TileMap
+public class SQLiteMap extends TileMap
 {
 	private static final long serialVersionUID = 2L;
 
 	public String ext;
 
-	public SASMap(String name, String path, String ext, int zmin, int zmax)
+	public SQLiteMap(String name, String path, String ext, int zmin, int zmax)
 	{
 		super(path);
 
