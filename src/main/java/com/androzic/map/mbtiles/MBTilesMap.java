@@ -32,36 +32,30 @@ import com.androzic.map.OnMapTileStateChangeListener;
 import com.androzic.map.Tile;
 import com.androzic.map.TileMap;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * https://github.com/mapbox/mbtiles-spec/blob/master/1.2/spec.md
+ */
 public class MBTilesMap extends TileMap
 {
 	private static final long serialVersionUID = 1L;
 
 	public static final byte[] MAGIC = "SQLite format".getBytes();
 
-	private static final String SQL_CREATE_tiles = "CREATE TABLE IF NOT EXISTS tiles (x int, y int, z int, s int, image blob, PRIMARY KEY (x,y,z,s));";
-	private static final String SQL_CREATE_info = "CREATE TABLE IF NOT EXISTS info (maxzoom Int, minzoom Int, params VARCHAR);";
-	private static final String SQL_SELECT_PARAMS = "SELECT * FROM info";
-	private static final String SQL_UPDATE_PARAMS = "UPDATE info SET params = ?";
-	private static final String SQL_SELECT_IMAGE = "SELECT image FROM tiles WHERE x = ? AND y = ? AND z = ?";
-	private static final String SQL_FINDTHEMAP = "SELECT x, y FROM tiles WHERE z = ? LIMIT 1";
-	private static final String SQL_DROP_TILES = "DROP TABLE IF EXISTS tiles";
-	private static final String SQL_DROP_INFO = "DROP TABLE IF EXISTS info";
-	private static final String SQL_TILES_COUNT = "SELECT COUNT(*) cnt FROM tiles";
-	private static final String SQL_INIT_INFO = "INSERT OR IGNORE INTO info (rowid, minzoom, maxzoom) SELECT 1, 0, 0;";
-	private static final String SQL_UPDZOOM_UPDMIN = "UPDATE info SET minzoom = (SELECT DISTINCT z FROM tiles ORDER BY z ASC LIMIT 1);";
-	private static final String SQL_UPDZOOM_UPDMAX = "UPDATE info SET maxzoom = (SELECT DISTINCT z FROM tiles ORDER BY z DESC LIMIT 1);";
-	private static final String SQL_GET_MINZOOM = "SELECT DISTINCT 17 - z FROM tiles ORDER BY z DESC LIMIT 1;";
-	private static final String SQL_GET_MAXZOOM = "SELECT DISTINCT 17 - z FROM tiles ORDER BY z ASC LIMIT 1;";
-	private static final String SQL_GET_MINX = "SELECT MIN(x) FROM tiles WHERE z = ?";
-	private static final String SQL_GET_MINY = "SELECT MIN(y) FROM tiles WHERE z = ?";
-	private static final String SQL_GET_MAXX = "SELECT MAX(x) FROM tiles WHERE z = ?";
-	private static final String SQL_GET_MAXY = "SELECT MAX(y) FROM tiles WHERE z = ?";
+	private static final String SQL_CREATE_TILES = "CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob);";
+	private static final String SQL_CREATE_METADATA = "CREATE TABLE metadata (name text, value text);";
+	private static final String SQL_GET_METADATA = "SELECT * FROM metadata";
+	private static final String SQL_GET_IMAGE = "SELECT tile_data FROM tiles WHERE tile_column = ? AND tile_row = ? AND zoom_level = ?";
+	private static final String SQL_GET_MINZOOM = "SELECT MIN(zoom_level) FROM tiles";
+	private static final String SQL_GET_MAXZOOM = "SELECT MAX(zoom_level) FROM tiles";
+	private static final String SQL_GET_MINX = "SELECT MIN(tile_row) FROM tiles WHERE zoom_level = ?";
+	private static final String SQL_GET_MINY = "SELECT MIN(tile_row) FROM tiles WHERE zoom_level = ?";
+	private static final String SQL_GET_MAXX = "SELECT MAX(tile_column) FROM tiles WHERE zoom_level = ?";
+	private static final String SQL_GET_MAXY = "SELECT MAX(tile_column) FROM tiles WHERE zoom_level = ?";
 
-	private SQLiteDatabase database;
+	private transient SQLiteDatabase database;
 
 	protected MBTilesMap()
 	{
@@ -82,46 +76,93 @@ public class MBTilesMap extends TileMap
 			byte zmax = (byte) database.compileStatement(SQL_GET_MAXZOOM).simpleQueryForLong();
 			initializeZooms(zmin, zmax, zmax);
 
-			// Remove extension
-			File file = new File(path);
-			name = file.getName().toLowerCase();
-			int e = name.lastIndexOf(".sqlitedb");
-			if (e > 0)
-				name = name.substring(0, e);
-
-			// And capitalize first letter
-			StringBuilder nameSb = new StringBuilder(name);
-			nameSb.setCharAt(0, Character.toUpperCase(nameSb.charAt(0)));
-			name = nameSb.toString();
-
-			String[] args = {String.valueOf(17 - zmax)};
-			int minx = getInt(SQL_GET_MINX, args);
-			int miny = getInt(SQL_GET_MINY, args);
-			int maxx = getInt(SQL_GET_MAXX, args);
-			int maxy = getInt(SQL_GET_MAXY, args);
-			setCornersAmount(4);
-			cornerMarkers[0].x = minx * TILE_SIZE;
-			cornerMarkers[0].y = miny * TILE_SIZE;
-			cornerMarkers[1].x = minx * TILE_SIZE;
-			cornerMarkers[1].y = (maxy + 1) * TILE_SIZE;
-			cornerMarkers[2].x = (maxx + 1) * TILE_SIZE;
-			cornerMarkers[2].y = (maxy + 1) * TILE_SIZE;
-			cornerMarkers[3].x = (maxx + 1) * TILE_SIZE;
-			cornerMarkers[3].y = miny * TILE_SIZE;
-			double[] ll = new double[2];
-			for (int i = 0; i < 4; i++)
+			String boundsString = null;
+			Cursor c = database.rawQuery(SQL_GET_METADATA, null);
+			c.moveToFirst();
+			while (!c.isAfterLast())
 			{
-				getLatLonByXY(cornerMarkers[i].x, cornerMarkers[i].y, ll);
-				cornerMarkers[i].lat = ll[0];
-				cornerMarkers[i].lon = ll[1];
+				/*
+				name: The plain-english name of the tileset.
+				type: overlay or baselayer
+				version: The version of the tileset, as a plain number.
+				description: A description of the layer as plain text.
+				format: The image file format of the tile data: png or jpg
+
+				bounds: The maximum extent of the rendered map area. Bounds must define an area covered by all zoom levels. The bounds are represented in WGS:84 - latitude and longitude values, in the OpenLayers Bounds format - left, bottom, right, top. Example of the full earth: -180.0,-85,180,85.
+				*/
+				String n = c.getString(0);
+				String v = c.getString(1);
+				Log.i("MBTiles", n + ": " + v);
+				if ("name".equals(n))
+					name = v;
+				if ("bounds".endsWith(n))
+					boundsString = v;
+				c.moveToNext();
 			}
-			database.close();
+			c.close();
+
+			setCornersAmount(4);
+			boolean hasCorners = false;
+			if (boundsString != null)
+			{
+				String[] bnds = boundsString.split(",");
+				if (bnds.length == 4)
+				{
+					double left = Double.valueOf(bnds[0]);
+					double bottom = Double.valueOf(bnds[1]);
+					double right = Double.valueOf(bnds[2]);
+					double top = Double.valueOf(bnds[3]);
+					cornerMarkers[0].lat = bottom;
+					cornerMarkers[0].lon = left;
+					cornerMarkers[1].lat = top;
+					cornerMarkers[1].lon = left;
+					cornerMarkers[2].lat = top;
+					cornerMarkers[2].lon = right;
+					cornerMarkers[3].lat = bottom;
+					cornerMarkers[3].lon = right;
+					int[] xy = new int[2];
+					for (int i = 0; i < 4; i++)
+					{
+						getXYByLatLon(cornerMarkers[i].lat, cornerMarkers[i].lon, xy);
+						cornerMarkers[i].x = xy[0];
+						cornerMarkers[i].y = xy[1];
+					}
+					hasCorners = true;
+				}
+			}
+			if (!hasCorners)
+			{
+				String[] args = {String.valueOf(zmax)};
+				int minx = getInt(SQL_GET_MINX, args);
+				int miny = getInt(SQL_GET_MINY, args);
+				int maxx = getInt(SQL_GET_MAXX, args);
+				int maxy = getInt(SQL_GET_MAXY, args);
+				cornerMarkers[0].x = minx * TILE_SIZE;
+				cornerMarkers[0].y = miny * TILE_SIZE;
+				cornerMarkers[1].x = minx * TILE_SIZE;
+				cornerMarkers[1].y = (maxy + 1) * TILE_SIZE;
+				cornerMarkers[2].x = (maxx + 1) * TILE_SIZE;
+				cornerMarkers[2].y = (maxy + 1) * TILE_SIZE;
+				cornerMarkers[3].x = (maxx + 1) * TILE_SIZE;
+				cornerMarkers[3].y = miny * TILE_SIZE;
+				double[] ll = new double[2];
+				for (int i = 0; i < 4; i++)
+				{
+					getLatLonByXY(cornerMarkers[i].x, cornerMarkers[i].y, ll);
+					cornerMarkers[i].lat = ll[0];
+					cornerMarkers[i].lon = ll[1];
+				}
+			}
 
 			updateTitle();
 		}
 		catch (SQLException e)
 		{
 			loadError = e;
+		}
+		finally
+		{
+			database.close();
 		}
 	}
 
@@ -133,7 +174,6 @@ public class MBTilesMap extends TileMap
 	@Override
 	public synchronized void activate(OnMapTileStateChangeListener listener, double mpp, boolean current) throws Throwable
 	{
-		Log.e("SQLMap", "activate(): " + name);
 		database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READONLY);
 		super.activate(listener, mpp, current);
 	}
@@ -141,7 +181,6 @@ public class MBTilesMap extends TileMap
 	@Override
 	public synchronized void deactivate()
 	{
-		Log.e("SQLMap", "deactivate(): " + name);
 		super.deactivate();
 		database.close();
 	}
@@ -233,16 +272,15 @@ public class MBTilesMap extends TileMap
 
 		if (database.isOpen())
 		{
-			String[] args = {String.valueOf(tx), String.valueOf(ty), String.valueOf(17 - z)};
-			Cursor c = database.rawQuery(SQL_SELECT_IMAGE, args);
+			String[] args = {String.valueOf(tx), String.valueOf((int) (Math.pow(2, z) - 1 - ty)), String.valueOf(z)};
+			Cursor c = database.rawQuery(SQL_GET_IMAGE, args);
 			try
 			{
 				c.moveToFirst();
 				data = c.getBlob(0);
 			}
-			catch (Throwable e)
+			catch (Throwable ignore)
 			{
-				e.printStackTrace();
 			}
 			finally
 			{
